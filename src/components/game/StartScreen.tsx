@@ -1,14 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Crown, Play, Landmark } from 'lucide-react';
+import { Crown, Play, Landmark, RotateCcw, Clock, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import gameLogo from '@/assets/game-logo.png';
+
+interface SaveInfo {
+  savedAt: string;
+  turnCount: number;
+  presidentName: string;
+}
 
 interface StartScreenProps {
   onStart: (presidentName: string, countryName: string) => void;
+  onLoadGame?: () => void;
+  hasSavedGame?: boolean;
+  saveInfo?: SaveInfo | null;
 }
 
-export const StartScreen = ({ onStart }: StartScreenProps) => {
+export const StartScreen = ({ onStart, onLoadGame, hasSavedGame, saveInfo }: StartScreenProps) => {
   const [presidentName, setPresidentName] = useState('');
   const [countryName, setCountryName] = useState('');
 
@@ -19,8 +29,23 @@ export const StartScreen = ({ onStart }: StartScreenProps) => {
     );
   };
 
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('ar-EG', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch {
+      return '';
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4" dir="rtl">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -34,9 +59,12 @@ export const StartScreen = ({ onStart }: StartScreenProps) => {
           transition={{ delay: 0.2, type: "spring", damping: 10 }}
           className="text-center mb-8"
         >
-          <div className="w-24 h-24 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-4 border-2 border-primary/30">
-            <Crown className="w-12 h-12 text-primary" />
-          </div>
+          <motion.img
+            src={gameLogo}
+            alt="محاكي الرئيس"
+            className="w-28 h-28 mx-auto mb-4 drop-shadow-2xl"
+            whileHover={{ scale: 1.05 }}
+          />
           <h1 className="text-4xl font-bold text-foreground mb-2">
             محاكي <span className="text-primary">الرئيس</span>
           </h1>
@@ -44,6 +72,40 @@ export const StartScreen = ({ onStart }: StartScreenProps) => {
             أدر دولتك واتخذ القرارات المصيرية
           </p>
         </motion.div>
+
+        {/* Saved Game Banner */}
+        {hasSavedGame && saveInfo && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mb-4 p-4 bg-primary/10 border border-primary/30 rounded-xl"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">لديك لعبة محفوظة</span>
+              </div>
+              <span className="text-xs text-muted-foreground">{formatDate(saveInfo.savedAt)}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">{saveInfo.presidentName}</span>
+                <span className="mx-2">•</span>
+                <span>الدور {saveInfo.turnCount}</span>
+              </div>
+              <Button
+                onClick={onLoadGame}
+                size="sm"
+                variant="secondary"
+                className="gap-2"
+              >
+                <RotateCcw className="w-3 h-3" />
+                استكمال
+              </Button>
+            </div>
+          </motion.div>
+        )}
 
         {/* Form */}
         <motion.div
@@ -86,7 +148,7 @@ export const StartScreen = ({ onStart }: StartScreenProps) => {
             className="w-full text-lg"
           >
             <Play className="w-5 h-5 ml-2" />
-            ابدأ الحكم
+            لعبة جديدة
           </Button>
         </motion.div>
 
@@ -95,10 +157,15 @@ export const StartScreen = ({ onStart }: StartScreenProps) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="mt-6 text-center text-sm text-muted-foreground"
+          className="mt-6 text-center text-sm text-muted-foreground space-y-2"
         >
-          <p className="mb-2">⚡ اتخذ قرارات حكيمة للحفاظ على توازن الدولة</p>
+          <p>⚡ اتخذ قرارات حكيمة للحفاظ على توازن الدولة</p>
+          <p>🏆 حقق شروط النصر للفوز باللعبة</p>
           <p>⚠️ إذا انخفض أي مؤشر لصفر، ستفقد الحكم!</p>
+          <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground/70 mt-4">
+            <Volume2 className="w-3 h-3" />
+            <span>تأثيرات صوتية مفعّلة</span>
+          </div>
         </motion.div>
       </motion.div>
     </div>

@@ -11,8 +11,10 @@ import { FactionsPanel } from '@/components/game/FactionsPanel';
 import { VictoryProgress } from '@/components/game/VictoryProgress';
 import { AdvisorsPanel } from '@/components/game/AdvisorsPanel';
 import { VictoryScreen } from '@/components/game/VictoryScreen';
-import { Crown, Map, Users, Trophy, Building } from 'lucide-react';
+import { GameHeader } from '@/components/game/GameHeader';
+import { Map, Users, Trophy, Building, Crown } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const {
@@ -21,46 +23,52 @@ const Index = () => {
     showEffects,
     lastEffects,
     gameStarted,
+    soundEnabled,
     startGame,
     makeChoice,
     restartGame,
     selectRegion,
+    handleSaveGame,
+    handleLoadGame,
+    handleToggleSound,
+    hasSavedGame,
+    getSaveInfo,
+    getStats,
   } = useGameLogic();
 
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('stats');
 
+  const onSave = () => {
+    const success = handleSaveGame();
+    toast({
+      title: success ? '✅ تم الحفظ' : '❌ فشل الحفظ',
+      description: success ? 'تم حفظ اللعبة بنجاح' : 'حدث خطأ أثناء الحفظ',
+      duration: 2000,
+    });
+  };
+
   if (!gameStarted) {
-    return <StartScreen onStart={startGame} />;
+    return (
+      <StartScreen
+        onStart={startGame}
+        onLoadGame={handleLoadGame}
+        hasSavedGame={hasSavedGame}
+        saveInfo={getSaveInfo()}
+      />
+    );
   }
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
       {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <Crown className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h1 className="font-bold text-foreground text-sm md:text-base">محاكي الرئيس</h1>
-                <p className="text-xs text-muted-foreground">{gameState.countryName}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground">السنة</p>
-                <p className="font-bold text-primary text-sm">{gameState.year}</p>
-              </div>
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground">الدور</p>
-                <p className="font-bold text-primary text-sm">{gameState.turnCount}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <GameHeader
+        gameState={gameState}
+        onSave={onSave}
+        isSoundEnabled={soundEnabled}
+        onToggleSound={handleToggleSound}
+        stats={getStats()}
+      />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-4">
