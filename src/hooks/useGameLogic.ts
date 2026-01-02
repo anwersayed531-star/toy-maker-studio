@@ -1,6 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { GameState, Choice, Decision, FollowUpEvent, initialGameState } from '@/types/game';
 import { getRandomDecision, decisions } from '@/data/decisions';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
+import { useGameSave } from '@/hooks/useGameSave';
 
 export const useGameLogic = () => {
   const [gameState, setGameState] = useState<GameState>(initialGameState);
@@ -9,6 +11,10 @@ export const useGameLogic = () => {
   const [showEffects, setShowEffects] = useState(false);
   const [lastEffects, setLastEffects] = useState<{ stat: string; value: number }[]>([]);
   const [gameStarted, setGameStarted] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+
+  const { playSound, toggleSound, isSoundEnabled } = useSoundEffects();
+  const { saveGame, loadGame, hasSavedGame, deleteSave, getSaveInfo, getStats, updateStats } = useGameSave();
 
   const checkVictory = useCallback((state: GameState): GameState => {
     const updatedConditions = state.victoryConditions.map(condition => {
@@ -64,13 +70,11 @@ export const useGameLogic = () => {
       gameOverReason = 'إفلاس تام! لم تستطع البلاد سداد ديونها.';
     }
 
-    // Check faction-based game over
     const militaryFaction = state.factions.find(f => f.id === 'military_faction');
     if (militaryFaction && militaryFaction.support <= 10) {
       gameOverReason = 'انقلاب عسكري! الجيش أطاح بك من السلطة.';
     }
 
-    // Check region unrest
     const rebelliousRegion = state.regions.find(r => r.unrest >= 90);
     if (rebelliousRegion) {
       gameOverReason = `تمرد في ${rebelliousRegion.name}! فقدت السيطرة على البلاد.`;
@@ -115,7 +119,6 @@ export const useGameLogic = () => {
       newYear += 1;
     }
 
-    // Natural region changes based on stats
     const updatedRegions = state.regions.map(region => ({
       ...region,
       unrest: Math.max(0, Math.min(100, region.unrest + (region.loyalty < 40 ? 5 : -2))),
@@ -136,7 +139,33 @@ export const useGameLogic = () => {
       ...prev,
       selectedRegion: prev.selectedRegion === regionId ? undefined : regionId,
     }));
-  }, []);
+    playSound('click');
+  }, [playSound]);
+
+  const handleSaveGame = useCallback(() => {
+    const success = saveGame(gameState, usedDecisions, currentDecision);
+    if (success) {
+      playSound('success');
+    }
+    return success;
+  }, [saveGame, gameState, usedDecisions, currentDecision, playSound]);
+
+  const handleLoadGame = useCallback(() => {
+    const saved = loadGame();
+    if (saved) {
+      setGameState(saved.gameState);
+      setUsedDecisions(saved.usedDecisions);
+      setGameStarted(true);
+      
+      if (saved.currentDecisionId) {
+        const decision = decisions.find(d => d.id === saved.currentDecisionId);
+        setCurrentDecision(decision || getRandomDecision(saved.usedDecisions));
+      } else {
+        setCurrentDecision(getRandomDecision(saved.usedDecisions));
+      }
+      playSound('success');
+    }
+  }, [loadGame, playSound]);
 
   const startGame = useCallback((presidentName: string, countryName: string) => {
     const newState: GameState = {
@@ -147,18 +176,21 @@ export const useGameLogic = () => {
     setGameState(newState);
     setUsedDecisions([]);
     setGameStarted(true);
+    deleteSave();
 
     const decision = getRandomDecision([]);
     setCurrentDecision(decision);
-  }, []);
+    playSound('success');
+  }, [deleteSave, playSound]);
 
   const makeChoice = useCallback((choice: Choice) => {
     if (!currentDecision) return;
 
+    playSound('decision');
+
     const effects: { stat: string; value: number }[] = [];
     let newState = { ...gameState };
 
-    // Apply main effects
     Object.entries(choice.effects).forEach(([stat, value]) => {
       if (value !== undefined && value !== 0) {
         effects.push({ stat, value });
@@ -166,7 +198,6 @@ export const useGameLogic = () => {
       }
     });
 
-    // Apply region effects
     if (choice.regionEffects) {
       const updatedRegions = newState.regions.map(region => {
         const regionEffect = choice.regionEffects?.find(re => re.regionId === region.id);
@@ -184,7 +215,6 @@ export const useGameLogic = () => {
       newState.regions = updatedRegions;
     }
 
-    // Apply faction effects
     if (choice.factionEffects) {
       const updatedFactions = newState.factions.map(faction => {
         const factionEffect = choice.factionEffects?.find(fe => fe.factionId === faction.id);
@@ -199,7 +229,6 @@ export const useGameLogic = () => {
       newState.factions = updatedFactions;
     }
 
-    // Add follow-up events
     if (currentDecision.followUpEvents) {
       const triggeredFollowUp = currentDecision.followUpEvents.find(fe => fe.choiceId === choice.id);
       if (triggeredFollowUp) {
@@ -218,27 +247,43 @@ export const useGameLogic = () => {
     setLastEffects(effects);
     setShowEffects(true);
 
+    const hasPositiveEffects = effects.some(e => e.value > 0);
+    const hasNegativeEffects = effects.some(e => e.value < 0);
+    
+    setTimeout(() => {
+      if (hasPositiveEffects && !hasNegativeEffects) {
+        playSound('success');
+      } else if (hasNegativeEffects && !hasPositiveEffects) {
+        playSound('warning');
+      }
+    }, 300);
+
     const newUsedDecisions = [...usedDecisions, currentDecision.id];
     setUsedDecisions(newUsedDecisions);
 
-    // Advance time and process
     let updatedState = advanceTime(newState);
-    
-    // Process follow-up events
     const { state: stateAfterEvents, triggeredEvent } = processFollowUpEvents(updatedState);
     updatedState = stateAfterEvents;
 
-    // Check victory and game over
     updatedState = checkVictory(updatedState);
     updatedState = checkGameOver(updatedState);
 
     setGameState(updatedState);
 
+    if (updatedState.gameWon) {
+      setTimeout(() => playSound('victory'), 500);
+      updateStats(updatedState, true);
+      deleteSave();
+    } else if (updatedState.gameOver) {
+      setTimeout(() => playSound('gameOver'), 500);
+      updateStats(updatedState, false);
+      deleteSave();
+    }
+
     setTimeout(() => {
       setShowEffects(false);
       
       if (!updatedState.gameOver && !updatedState.gameWon) {
-        // If there's a triggered follow-up event, show it
         if (triggeredEvent) {
           setCurrentDecision(triggeredEvent);
         } else {
@@ -253,7 +298,7 @@ export const useGameLogic = () => {
         }
       }
     }, 2000);
-  }, [currentDecision, gameState, usedDecisions, advanceTime, checkGameOver, checkVictory, processFollowUpEvents]);
+  }, [currentDecision, gameState, usedDecisions, advanceTime, checkGameOver, checkVictory, processFollowUpEvents, playSound, updateStats, deleteSave]);
 
   const restartGame = useCallback(() => {
     setGameState(initialGameState);
@@ -262,7 +307,14 @@ export const useGameLogic = () => {
     setGameStarted(false);
     setShowEffects(false);
     setLastEffects([]);
-  }, []);
+    playSound('click');
+  }, [playSound]);
+
+  const handleToggleSound = useCallback(() => {
+    const newValue = !soundEnabled;
+    setSoundEnabled(newValue);
+    toggleSound(newValue);
+  }, [soundEnabled, toggleSound]);
 
   return {
     gameState,
@@ -270,9 +322,16 @@ export const useGameLogic = () => {
     showEffects,
     lastEffects,
     gameStarted,
+    soundEnabled,
     startGame,
     makeChoice,
     restartGame,
     selectRegion,
+    handleSaveGame,
+    handleLoadGame,
+    handleToggleSound,
+    hasSavedGame: hasSavedGame(),
+    getSaveInfo,
+    getStats,
   };
 };
