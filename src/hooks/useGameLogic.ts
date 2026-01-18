@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { GameState, Choice, Decision, FollowUpEvent, initialGameState } from '@/types/game';
 import { getRandomDecision, decisions } from '@/data/decisions';
+import { getRandomEvent, RandomEvent, ActiveEventCooldown } from '@/data/randomEvents';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useGameSave } from '@/hooks/useGameSave';
 
@@ -12,6 +13,8 @@ export const useGameLogic = () => {
   const [lastEffects, setLastEffects] = useState<{ stat: string; value: number }[]>([]);
   const [gameStarted, setGameStarted] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [currentRandomEvent, setCurrentRandomEvent] = useState<RandomEvent | null>(null);
+  const [showRandomEventNotification, setShowRandomEventNotification] = useState(false);
 
   const { playSound, toggleSound, isSoundEnabled } = useSoundEffects();
   const { saveGame, loadGame, hasSavedGame, deleteSave, getSaveInfo, getStats, updateStats } = useGameSave();
@@ -110,6 +113,35 @@ export const useGameLogic = () => {
     return { state: { ...state, pendingEvents: updatedEvents }, triggeredEvent: null };
   }, []);
 
+  const processRandomEvents = useCallback((state: GameState): { state: GameState; randomEvent: RandomEvent | null } => {
+    // Update cooldowns
+    const updatedCooldowns = state.eventCooldowns
+      .map(c => ({ ...c, turnsRemaining: c.turnsRemaining - 1 }))
+      .filter(c => c.turnsRemaining > 0);
+
+    // Check for random event
+    const randomEvent = getRandomEvent(state.turnCount, updatedCooldowns);
+    
+    if (randomEvent) {
+      // Add cooldown for this event
+      updatedCooldowns.push({
+        eventId: randomEvent.id,
+        turnsRemaining: randomEvent.cooldown,
+      });
+
+      return {
+        state: {
+          ...state,
+          eventCooldowns: updatedCooldowns,
+          lastRandomEvent: randomEvent.id,
+        },
+        randomEvent,
+      };
+    }
+
+    return { state: { ...state, eventCooldowns: updatedCooldowns }, randomEvent: null };
+  }, []);
+
   const advanceTime = useCallback((state: GameState): GameState => {
     let newMonth = state.month + 1;
     let newYear = state.year;
@@ -176,6 +208,7 @@ export const useGameLogic = () => {
     setGameState(newState);
     setUsedDecisions([]);
     setGameStarted(true);
+    setCurrentRandomEvent(null);
     deleteSave();
 
     const decision = getRandomDecision([]);
@@ -265,6 +298,10 @@ export const useGameLogic = () => {
     const { state: stateAfterEvents, triggeredEvent } = processFollowUpEvents(updatedState);
     updatedState = stateAfterEvents;
 
+    // Check for random events
+    const { state: stateAfterRandom, randomEvent } = processRandomEvents(updatedState);
+    updatedState = stateAfterRandom;
+
     updatedState = checkVictory(updatedState);
     updatedState = checkGameOver(updatedState);
 
@@ -284,7 +321,18 @@ export const useGameLogic = () => {
       setShowEffects(false);
       
       if (!updatedState.gameOver && !updatedState.gameWon) {
-        if (triggeredEvent) {
+        // Check if random event should be shown
+        if (randomEvent) {
+          setCurrentRandomEvent(randomEvent);
+          setShowRandomEventNotification(true);
+          playSound('warning');
+          
+          // Show notification for 3 seconds then show the event as a decision
+          setTimeout(() => {
+            setShowRandomEventNotification(false);
+            setCurrentDecision(randomEvent);
+          }, 3000);
+        } else if (triggeredEvent) {
           setCurrentDecision(triggeredEvent);
         } else {
           const nextDecision = getRandomDecision(newUsedDecisions);
@@ -298,7 +346,7 @@ export const useGameLogic = () => {
         }
       }
     }, 2000);
-  }, [currentDecision, gameState, usedDecisions, advanceTime, checkGameOver, checkVictory, processFollowUpEvents, playSound, updateStats, deleteSave]);
+  }, [currentDecision, gameState, usedDecisions, advanceTime, checkGameOver, checkVictory, processFollowUpEvents, processRandomEvents, playSound, updateStats, deleteSave]);
 
   const restartGame = useCallback(() => {
     setGameState(initialGameState);
@@ -307,6 +355,8 @@ export const useGameLogic = () => {
     setGameStarted(false);
     setShowEffects(false);
     setLastEffects([]);
+    setCurrentRandomEvent(null);
+    setShowRandomEventNotification(false);
     playSound('click');
   }, [playSound]);
 
@@ -323,6 +373,8 @@ export const useGameLogic = () => {
     lastEffects,
     gameStarted,
     soundEnabled,
+    currentRandomEvent,
+    showRandomEventNotification,
     startGame,
     makeChoice,
     restartGame,
