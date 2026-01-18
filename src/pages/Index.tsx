@@ -6,12 +6,13 @@ import { StatsPanel } from '@/components/game/StatsPanel';
 import { DecisionCard } from '@/components/game/DecisionCard';
 import { EffectNotification } from '@/components/game/EffectNotification';
 import { GameOver } from '@/components/game/GameOver';
-import { InteractiveMap } from '@/components/game/InteractiveMap';
+import { CountryMap } from '@/components/game/CountryMap';
 import { FactionsPanel } from '@/components/game/FactionsPanel';
 import { VictoryProgress } from '@/components/game/VictoryProgress';
 import { AdvisorsPanel } from '@/components/game/AdvisorsPanel';
 import { VictoryScreen } from '@/components/game/VictoryScreen';
 import { GameHeader } from '@/components/game/GameHeader';
+import { RandomEventNotification } from '@/components/game/RandomEventNotification';
 import { Map, Users, Trophy, Building, Crown } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
@@ -34,6 +35,8 @@ const Index = () => {
     hasSavedGame,
     getSaveInfo,
     getStats,
+    currentRandomEvent,
+    showRandomEventNotification,
   } = useGameLogic();
 
   const { toast } = useToast();
@@ -101,10 +104,11 @@ const Index = () => {
               </TabsContent>
 
               <TabsContent value="map" className="mt-4">
-                <InteractiveMap 
+                <CountryMap 
                   regions={gameState.regions}
                   selectedRegion={gameState.selectedRegion}
                   onSelectRegion={selectRegion}
+                  activeEvent={currentRandomEvent?.id}
                 />
               </TabsContent>
 
@@ -137,6 +141,9 @@ const Index = () => {
 
       {/* Effect Notification */}
       <EffectNotification effects={lastEffects} isVisible={showEffects} />
+
+      {/* Random Event Notification */}
+      <RandomEventNotification event={currentRandomEvent} isVisible={showRandomEventNotification} />
 
       {/* Victory Screen */}
       {gameState.gameWon && (

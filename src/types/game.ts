@@ -81,6 +81,10 @@ export interface GameState {
   // Follow-up events
   pendingEvents: FollowUpEvent[];
   
+  // Random events
+  eventCooldowns: { eventId: string; turnsRemaining: number }[];
+  lastRandomEvent?: string;
+  
   // Game status
   gameOver: boolean;
   gameOverReason?: string;
@@ -170,6 +174,7 @@ export const initialGameState: GameState = {
   victoryConditions: initialVictoryConditions,
   gameWon: false,
   pendingEvents: [],
+  eventCooldowns: [],
   gameOver: false,
   turnCount: 0,
 };
