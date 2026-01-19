@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Crown, Play, Landmark, RotateCcw, Clock, Volume2 } from 'lucide-react';
+import { Crown, Play, Landmark, RotateCcw, Clock, Volume2, Save, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import gameLogo from '@/assets/game-logo.png';
@@ -162,9 +162,19 @@ export const StartScreen = ({ onStart, onLoadGame, hasSavedGame, saveInfo }: Sta
           <p>⚡ اتخذ قرارات حكيمة للحفاظ على توازن الدولة</p>
           <p>🏆 حقق شروط النصر للفوز باللعبة</p>
           <p>⚠️ إذا انخفض أي مؤشر لصفر، ستفقد الحكم!</p>
-          <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground/70 mt-4">
-            <Volume2 className="w-3 h-3" />
-            <span>تأثيرات صوتية مفعّلة</span>
+          <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground/70 mt-4">
+            <div className="flex items-center gap-1">
+              <Volume2 className="w-3 h-3" />
+              <span>تأثيرات صوتية</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Save className="w-3 h-3" />
+              <span>حفظ تلقائي</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Bell className="w-3 h-3" />
+              <span>تذكير كل 15 ساعة</span>
+            </div>
           </div>
         </motion.div>
       </motion.div>
