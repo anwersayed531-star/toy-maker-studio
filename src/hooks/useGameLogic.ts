@@ -4,6 +4,8 @@ import { getRandomDecision, decisions } from '@/data/decisions';
 import { getRandomEvent, RandomEvent, ActiveEventCooldown } from '@/data/randomEvents';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useGameSave } from '@/hooks/useGameSave';
+import { useAutoSave, loadAutoSave, hasAutoSave, clearAutoSave } from '@/hooks/useAutoSave';
+import { useNotifications } from '@/hooks/useNotifications';
 
 export const useGameLogic = () => {
   const [gameState, setGameState] = useState<GameState>(initialGameState);
@@ -18,6 +20,10 @@ export const useGameLogic = () => {
 
   const { playSound, toggleSound, isSoundEnabled } = useSoundEffects();
   const { saveGame, loadGame, hasSavedGame, deleteSave, getSaveInfo, getStats, updateStats } = useGameSave();
+  const { scheduleReminder, cancelReminder } = useNotifications();
+
+  // Auto-save hook
+  useAutoSave(gameStarted, gameState, usedDecisions, currentDecision);
 
   const checkVictory = useCallback((state: GameState): GameState => {
     const updatedConditions = state.victoryConditions.map(condition => {
@@ -183,7 +189,8 @@ export const useGameLogic = () => {
   }, [saveGame, gameState, usedDecisions, currentDecision, playSound]);
 
   const handleLoadGame = useCallback(() => {
-    const saved = loadGame();
+    // Try manual save first, then auto-save
+    const saved = loadGame() || loadAutoSave();
     if (saved) {
       setGameState(saved.gameState);
       setUsedDecisions(saved.usedDecisions);
@@ -196,8 +203,9 @@ export const useGameLogic = () => {
         setCurrentDecision(getRandomDecision(saved.usedDecisions));
       }
       playSound('success');
+      cancelReminder(); // Cancel reminder when game is loaded
     }
-  }, [loadGame, playSound]);
+  }, [loadGame, playSound, cancelReminder]);
 
   const startGame = useCallback((presidentName: string, countryName: string) => {
     const newState: GameState = {
@@ -210,11 +218,13 @@ export const useGameLogic = () => {
     setGameStarted(true);
     setCurrentRandomEvent(null);
     deleteSave();
+    clearAutoSave();
+    cancelReminder(); // Cancel any pending reminders
 
     const decision = getRandomDecision([]);
     setCurrentDecision(decision);
     playSound('success');
-  }, [deleteSave, playSound]);
+  }, [deleteSave, playSound, cancelReminder]);
 
   const makeChoice = useCallback((choice: Choice) => {
     if (!currentDecision) return;
@@ -311,10 +321,14 @@ export const useGameLogic = () => {
       setTimeout(() => playSound('victory'), 500);
       updateStats(updatedState, true);
       deleteSave();
+      clearAutoSave();
+      scheduleReminder(); // Schedule reminder after game ends
     } else if (updatedState.gameOver) {
       setTimeout(() => playSound('gameOver'), 500);
       updateStats(updatedState, false);
       deleteSave();
+      clearAutoSave();
+      scheduleReminder(); // Schedule reminder after game ends
     }
 
     setTimeout(() => {
@@ -357,6 +371,7 @@ export const useGameLogic = () => {
     setLastEffects([]);
     setCurrentRandomEvent(null);
     setShowRandomEventNotification(false);
+    clearAutoSave();
     playSound('click');
   }, [playSound]);
 
@@ -382,7 +397,7 @@ export const useGameLogic = () => {
     handleSaveGame,
     handleLoadGame,
     handleToggleSound,
-    hasSavedGame: hasSavedGame(),
+    hasSavedGame: hasSavedGame() || hasAutoSave(),
     getSaveInfo,
     getStats,
   };
