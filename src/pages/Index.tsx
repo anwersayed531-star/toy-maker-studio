@@ -76,8 +76,10 @@ const Index = () => {
     );
   }
 
+  const { isRTL } = useLanguage();
+
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="min-h-screen bg-background" dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Header */}
       <GameHeader
         gameState={gameState}
