@@ -2,16 +2,19 @@ import { motion } from 'framer-motion';
 import { TrendingUp, Shield, Users, Globe, Wallet, UserCircle } from 'lucide-react';
 import { GameState } from '@/types/game';
 import { StatBar } from './StatBar';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface StatsPanelProps {
   gameState: GameState;
 }
 
 export const StatsPanel = ({ gameState }: StatsPanelProps) => {
-  const months = [
-    'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
-  ];
+  const { t, currentLanguage } = useLanguage();
+
+  const getMonthName = (month: number) => {
+    const date = new Date(2024, month - 1, 1);
+    return date.toLocaleDateString(currentLanguage, { month: 'long' });
+  };
 
   return (
     <motion.div
@@ -25,31 +28,31 @@ export const StatsPanel = ({ gameState }: StatsPanelProps) => {
           <UserCircle className="w-8 h-8 text-primary" />
           <h2 className="text-xl font-bold text-foreground">{gameState.presidentName}</h2>
         </div>
-        <p className="text-muted-foreground text-sm">رئيس {gameState.countryName}</p>
+        <p className="text-muted-foreground text-sm">{gameState.countryName}</p>
         <p className="text-primary text-sm mt-1">
-          {months[gameState.month - 1]} {gameState.year}
+          {getMonthName(gameState.month)} {gameState.year}
         </p>
       </div>
 
       {/* Stats */}
       <div className="space-y-4">
         <StatBar
-          label="الاقتصاد"
+          label={t('economy')}
           value={gameState.economy}
           icon={<TrendingUp className="w-4 h-4" />}
         />
         <StatBar
-          label="الجيش"
+          label={t('military')}
           value={gameState.military}
           icon={<Shield className="w-4 h-4" />}
         />
         <StatBar
-          label="الشعبية"
+          label={t('popularity')}
           value={gameState.popularity}
           icon={<Users className="w-4 h-4" />}
         />
         <StatBar
-          label="الدبلوماسية"
+          label={t('diplomacy')}
           value={gameState.diplomacy}
           icon={<Globe className="w-4 h-4" />}
         />
@@ -60,26 +63,28 @@ export const StatsPanel = ({ gameState }: StatsPanelProps) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Wallet className="w-4 h-4 text-primary" />
-            <span className="text-sm text-muted-foreground">الخزينة</span>
+            <span className="text-sm text-muted-foreground">{t('treasury')}</span>
           </div>
           <span className="text-sm font-bold text-foreground">
-            {gameState.treasury} مليار $
+            {gameState.treasury}B $
           </span>
         </div>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-primary" />
-            <span className="text-sm text-muted-foreground">السكان</span>
+            <span className="text-sm text-muted-foreground">
+              {currentLanguage === 'ar' ? 'السكان' : 'Population'}
+            </span>
           </div>
           <span className="text-sm font-bold text-foreground">
-            {gameState.population} مليون
+            {gameState.population}M
           </span>
         </div>
       </div>
 
       {/* Turn counter */}
       <div className="text-center text-xs text-muted-foreground">
-        الدور رقم: {gameState.turnCount}
+        {t('turn')}: {gameState.turnCount}
       </div>
     </motion.div>
   );

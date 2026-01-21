@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { GameState } from '@/types/game';
 import { Button } from '@/components/ui/button';
 import { Crown, RotateCcw, Trophy, Skull } from 'lucide-react';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface GameOverProps {
   gameState: GameState;
@@ -9,6 +10,7 @@ interface GameOverProps {
 }
 
 export const GameOver = ({ gameState, onRestart }: GameOverProps) => {
+  const { t, isRTL, currentLanguage } = useLanguage();
   const isVictory = !gameState.gameOverReason;
   const score = Math.round(
     (gameState.economy + gameState.military + gameState.popularity + gameState.diplomacy) / 4
@@ -19,6 +21,7 @@ export const GameOver = ({ gameState, onRestart }: GameOverProps) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="fixed inset-0 flex items-center justify-center z-50 bg-background/95 backdrop-blur-md"
+      dir={isRTL ? 'rtl' : 'ltr'}
     >
       <motion.div
         initial={{ scale: 0.8, y: 50 }}
@@ -42,39 +45,47 @@ export const GameOver = ({ gameState, onRestart }: GameOverProps) => {
         </motion.div>
 
         <h2 className="text-2xl font-bold text-foreground mb-2">
-          {isVictory ? 'تهانينا!' : 'انتهت فترة حكمك'}
+          {isVictory 
+            ? (currentLanguage === 'ar' ? 'تهانينا!' : 'Congratulations!') 
+            : t('gameOver')}
         </h2>
 
         <p className="text-muted-foreground mb-6">
-          {gameState.gameOverReason || `حكمت البلاد لمدة ${gameState.turnCount} دور بنجاح!`}
+          {gameState.gameOverReason || (currentLanguage === 'ar' 
+            ? `حكمت البلاد لمدة ${gameState.turnCount} دور بنجاح!`
+            : `You ruled for ${gameState.turnCount} turns successfully!`)}
         </p>
 
         {/* Score */}
         <div className="bg-secondary/50 rounded-xl p-4 mb-6">
-          <p className="text-sm text-muted-foreground mb-1">النتيجة النهائية</p>
+          <p className="text-sm text-muted-foreground mb-1">
+            {currentLanguage === 'ar' ? 'النتيجة النهائية' : 'Final Score'}
+          </p>
           <div className="flex items-center justify-center gap-2">
             <Crown className="w-6 h-6 text-primary" />
             <span className="text-3xl font-bold text-primary">{score}</span>
-            <span className="text-muted-foreground">نقطة</span>
+            <span className="text-muted-foreground">
+              {currentLanguage === 'ar' ? 'نقطة' : 'pts'}
+            </span>
           </div>
         </div>
 
         {/* Stats Summary */}
         <div className="grid grid-cols-2 gap-3 mb-6 text-sm">
           <div className="bg-secondary/30 rounded-lg p-3">
-            <p className="text-muted-foreground">الاقتصاد</p>
+            <p className="text-muted-foreground">{t('economy')}</p>
             <p className="font-bold text-foreground">{Math.round(gameState.economy)}%</p>
           </div>
           <div className="bg-secondary/30 rounded-lg p-3">
-            <p className="text-muted-foreground">الجيش</p>
+            <p className="text-muted-foreground">{t('military')}</p>
             <p className="font-bold text-foreground">{Math.round(gameState.military)}%</p>
           </div>
           <div className="bg-secondary/30 rounded-lg p-3">
-            <p className="text-muted-foreground">الشعبية</p>
+            <p className="text-muted-foreground">{t('popularity')}</p>
             <p className="font-bold text-foreground">{Math.round(gameState.popularity)}%</p>
           </div>
           <div className="bg-secondary/30 rounded-lg p-3">
-            <p className="text-muted-foreground">الدبلوماسية</p>
+            <p className="text-muted-foreground">{t('diplomacy')}</p>
             <p className="font-bold text-foreground">{Math.round(gameState.diplomacy)}%</p>
           </div>
         </div>
@@ -84,8 +95,8 @@ export const GameOver = ({ gameState, onRestart }: GameOverProps) => {
           size="lg"
           className="w-full"
         >
-          <RotateCcw className="w-5 h-5 ml-2" />
-          لعب مرة أخرى
+          <RotateCcw className={`w-5 h-5 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+          {t('playAgain')}
         </Button>
       </motion.div>
     </motion.div>

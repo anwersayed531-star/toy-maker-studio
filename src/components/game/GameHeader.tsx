@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { GameState } from '@/types/game';
-import { Crown, Save, Volume2, VolumeX, BarChart3, Settings } from 'lucide-react';
+import { Save, Volume2, VolumeX, BarChart3, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -11,6 +11,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { SettingsScreen } from './SettingsScreen';
+import { useLanguage } from '@/hooks/useLanguage';
 import gameLogo from '@/assets/game-logo.png';
 
 interface GameStats {
@@ -51,6 +52,7 @@ export const GameHeader = ({
 }: GameHeaderProps) => {
   const [showStats, setShowStats] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const { t, isRTL } = useLanguage();
 
   return (
     <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
@@ -60,12 +62,12 @@ export const GameHeader = ({
           <div className="flex items-center gap-3">
             <motion.img
               src={gameLogo}
-              alt="محاكي الرئيس"
+              alt={t('appName')}
               className="w-10 h-10 rounded-lg"
               whileHover={{ scale: 1.05 }}
             />
             <div>
-              <h1 className="font-bold text-foreground text-sm md:text-base">محاكي الرئيس</h1>
+              <h1 className="font-bold text-foreground text-sm md:text-base">{t('appName')}</h1>
               <p className="text-xs text-muted-foreground">{gameState.countryName}</p>
             </div>
           </div>
@@ -73,11 +75,11 @@ export const GameHeader = ({
           {/* Game Info */}
           <div className="flex items-center gap-2 md:gap-4">
             <div className="text-center hidden sm:block">
-              <p className="text-xs text-muted-foreground">السنة</p>
+              <p className="text-xs text-muted-foreground">{currentLanguage === 'ar' ? 'السنة' : 'Year'}</p>
               <p className="font-bold text-primary text-sm">{gameState.year}</p>
             </div>
             <div className="text-center">
-              <p className="text-xs text-muted-foreground">الدور</p>
+              <p className="text-xs text-muted-foreground">{t('turn')}</p>
               <p className="font-bold text-primary text-sm">{gameState.turnCount}</p>
             </div>
 
@@ -111,47 +113,49 @@ export const GameHeader = ({
                     <BarChart3 className="w-4 h-4" />
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-sm" dir="rtl">
+                <DialogContent className="max-w-sm" dir={isRTL ? 'rtl' : 'ltr'}>
                   <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                       <BarChart3 className="w-5 h-5 text-primary" />
-                      إحصائياتك
+                      {t('statistics')}
                     </DialogTitle>
                   </DialogHeader>
                   <div className="grid grid-cols-2 gap-4 py-4">
                     <div className="p-3 bg-muted/50 rounded-lg text-center">
                       <p className="text-2xl font-bold text-foreground">{stats.totalGames}</p>
-                      <p className="text-xs text-muted-foreground">إجمالي الألعاب</p>
+                      <p className="text-xs text-muted-foreground">{t('totalGames')}</p>
                     </div>
                     <div className="p-3 bg-muted/50 rounded-lg text-center">
-                      <p className="text-2xl font-bold text-success">{stats.victories}</p>
-                      <p className="text-xs text-muted-foreground">انتصارات</p>
+                      <p className="text-2xl font-bold text-green-500">{stats.victories}</p>
+                      <p className="text-xs text-muted-foreground">{t('victories')}</p>
                     </div>
                     <div className="p-3 bg-muted/50 rounded-lg text-center">
                       <p className="text-2xl font-bold text-destructive">{stats.defeats}</p>
-                      <p className="text-xs text-muted-foreground">هزائم</p>
+                      <p className="text-xs text-muted-foreground">{t('defeats')}</p>
                     </div>
                     <div className="p-3 bg-muted/50 rounded-lg text-center">
                       <p className="text-2xl font-bold text-primary">{stats.longestGame}</p>
-                      <p className="text-xs text-muted-foreground">أطول لعبة (أدوار)</p>
+                      <p className="text-xs text-muted-foreground">{t('longestGame')}</p>
                     </div>
                     <div className="col-span-2 p-3 bg-primary/10 rounded-lg">
-                      <p className="text-sm font-medium text-foreground mb-2">أعلى الإحصائيات</p>
+                      <p className="text-sm font-medium text-foreground mb-2">
+                        {currentLanguage === 'ar' ? 'أعلى الإحصائيات' : 'Highest Stats'}
+                      </p>
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">اقتصاد:</span>
+                          <span className="text-muted-foreground">{t('economy')}:</span>
                           <span className="font-bold">{stats.highestEconomy}%</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">جيش:</span>
+                          <span className="text-muted-foreground">{t('military')}:</span>
                           <span className="font-bold">{stats.highestMilitary}%</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">شعبية:</span>
+                          <span className="text-muted-foreground">{t('popularity')}:</span>
                           <span className="font-bold">{stats.highestPopularity}%</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">دبلوماسية:</span>
+                          <span className="text-muted-foreground">{t('diplomacy')}:</span>
                           <span className="font-bold">{stats.highestDiplomacy}%</span>
                         </div>
                       </div>
@@ -166,7 +170,7 @@ export const GameHeader = ({
                     <Settings className="w-4 h-4" />
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-md p-0 overflow-hidden" dir="rtl">
+                <DialogContent className="max-w-md p-0 overflow-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
                   <SettingsScreen
                     isSoundEnabled={isSoundEnabled}
                     onToggleSound={onToggleSound}
