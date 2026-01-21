@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { GameState } from '@/types/game';
-import { Crown, Save, Volume2, VolumeX, BarChart3 } from 'lucide-react';
+import { Crown, Save, Volume2, VolumeX, BarChart3, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -10,6 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { SettingsScreen } from './SettingsScreen';
 import gameLogo from '@/assets/game-logo.png';
 
 interface GameStats {
@@ -29,6 +30,11 @@ interface GameHeaderProps {
   isSoundEnabled: boolean;
   onToggleSound: () => void;
   stats: GameStats;
+  notificationsEnabled: boolean;
+  onToggleNotifications: () => void;
+  currentLanguage: string;
+  onLanguageChange: (lang: string) => void;
+  onClearData: () => void;
 }
 
 export const GameHeader = ({
@@ -37,8 +43,14 @@ export const GameHeader = ({
   isSoundEnabled,
   onToggleSound,
   stats,
+  notificationsEnabled,
+  onToggleNotifications,
+  currentLanguage,
+  onLanguageChange,
+  onClearData,
 }: GameHeaderProps) => {
   const [showStats, setShowStats] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   return (
     <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
@@ -145,6 +157,28 @@ export const GameHeader = ({
                       </div>
                     </div>
                   </div>
+                </DialogContent>
+              </Dialog>
+
+              <Dialog open={showSettings} onOpenChange={setShowSettings}>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Settings className="w-4 h-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md p-0 overflow-hidden" dir="rtl">
+                  <SettingsScreen
+                    isSoundEnabled={isSoundEnabled}
+                    onToggleSound={onToggleSound}
+                    notificationsEnabled={notificationsEnabled}
+                    onToggleNotifications={onToggleNotifications}
+                    currentLanguage={currentLanguage}
+                    onLanguageChange={onLanguageChange}
+                    onClearData={() => {
+                      onClearData();
+                      setShowSettings(false);
+                    }}
+                  />
                 </DialogContent>
               </Dialog>
             </div>

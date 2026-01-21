@@ -16,6 +16,8 @@ import { RandomEventNotification } from '@/components/game/RandomEventNotificati
 import { Map, Users, Trophy, Building, Crown } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { useSettings } from '@/hooks/useSettings';
+import { useLanguage } from '@/hooks/useLanguage';
 
 const Index = () => {
   const {
@@ -41,6 +43,8 @@ const Index = () => {
 
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('stats');
+  const { settings, updateNotificationsEnabled } = useSettings();
+  const { currentLanguage, changeLanguage } = useLanguage();
 
   const onSave = () => {
     const success = handleSaveGame();
@@ -49,6 +53,16 @@ const Index = () => {
       description: success ? 'تم حفظ اللعبة بنجاح' : 'حدث خطأ أثناء الحفظ',
       duration: 2000,
     });
+  };
+
+  const handleClearData = () => {
+    localStorage.clear();
+    toast({
+      title: '🗑️ تم الحذف',
+      description: 'تم حذف جميع البيانات المحفوظة',
+      duration: 2000,
+    });
+    restartGame();
   };
 
   if (!gameStarted) {
@@ -71,6 +85,11 @@ const Index = () => {
         isSoundEnabled={soundEnabled}
         onToggleSound={handleToggleSound}
         stats={getStats()}
+        notificationsEnabled={settings.notificationsEnabled}
+        onToggleNotifications={() => updateNotificationsEnabled(!settings.notificationsEnabled)}
+        currentLanguage={currentLanguage}
+        onLanguageChange={changeLanguage}
+        onClearData={handleClearData}
       />
 
       {/* Main Content */}
