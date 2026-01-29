@@ -44,7 +44,8 @@ const Index = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('stats');
   const { settings, updateNotificationsEnabled } = useSettings();
-  const { currentLanguage, changeLanguage } = useLanguage();
+  const { currentLanguage, changeLanguage, isRTL } = useLanguage();
+  
 
   const onSave = () => {
     const success = handleSaveGame();
@@ -75,8 +76,6 @@ const Index = () => {
       />
     );
   }
-
-  const { isRTL } = useLanguage();
 
   return (
     <div className="min-h-screen bg-background" dir={isRTL ? 'rtl' : 'ltr'}>
