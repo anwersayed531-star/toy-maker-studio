@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { VictoryCondition } from '@/types/game';
 import { Trophy, TrendingUp, Shield, Globe, Heart, Check } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface VictoryProgressProps {
   conditions: VictoryCondition[];
@@ -22,6 +23,7 @@ const getProgressPercent = (current: number, target: number) => {
 };
 
 export const VictoryProgress = ({ conditions }: VictoryProgressProps) => {
+  const { t } = useLanguage();
   const completedCount = conditions.filter(c => c.completed).length;
 
   return (
@@ -29,10 +31,10 @@ export const VictoryProgress = ({ conditions }: VictoryProgressProps) => {
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
           <Trophy className="w-5 h-5 text-primary" />
-          شروط النصر
+          {t('victoryConditions')}
         </h3>
         <span className="text-sm text-muted-foreground">
-          {completedCount}/{conditions.length} مكتمل
+          {completedCount}/{conditions.length} {t('completed')}
         </span>
       </div>
 

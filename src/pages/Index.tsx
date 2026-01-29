@@ -44,14 +44,13 @@ const Index = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('stats');
   const { settings, updateNotificationsEnabled } = useSettings();
-  const { currentLanguage, changeLanguage, isRTL } = useLanguage();
+  const { t, currentLanguage, changeLanguage, isRTL } = useLanguage();
   
-
   const onSave = () => {
     const success = handleSaveGame();
     toast({
-      title: success ? '✅ تم الحفظ' : '❌ فشل الحفظ',
-      description: success ? 'تم حفظ اللعبة بنجاح' : 'حدث خطأ أثناء الحفظ',
+      title: success ? `✅ ${t('save')}` : `❌ ${t('cancel')}`,
+      description: success ? t('dataDeleted').replace('تم حذف', 'تم حفظ') : '',
       duration: 2000,
     });
   };
@@ -59,8 +58,8 @@ const Index = () => {
   const handleClearData = () => {
     localStorage.clear();
     toast({
-      title: '🗑️ تم الحذف',
-      description: 'تم حذف جميع البيانات المحفوظة',
+      title: `🗑️ ${t('dataDeleted')}`,
+      description: t('deleteDataWarning'),
       duration: 2000,
     });
     restartGame();
@@ -102,19 +101,19 @@ const Index = () => {
               <TabsList className="grid w-full grid-cols-4 h-auto">
                 <TabsTrigger value="stats" className="flex flex-col gap-1 py-2">
                   <Crown className="w-4 h-4" />
-                  <span className="text-xs">الإحصائيات</span>
+                  <span className="text-xs">{t('tabStats')}</span>
                 </TabsTrigger>
                 <TabsTrigger value="map" className="flex flex-col gap-1 py-2">
                   <Map className="w-4 h-4" />
-                  <span className="text-xs">الخريطة</span>
+                  <span className="text-xs">{t('tabMap')}</span>
                 </TabsTrigger>
                 <TabsTrigger value="factions" className="flex flex-col gap-1 py-2">
                   <Users className="w-4 h-4" />
-                  <span className="text-xs">الفصائل</span>
+                  <span className="text-xs">{t('tabFactions')}</span>
                 </TabsTrigger>
                 <TabsTrigger value="admin" className="flex flex-col gap-1 py-2">
                   <Building className="w-4 h-4" />
-                  <span className="text-xs">الإدارة</span>
+                  <span className="text-xs">{t('tabAdmin')}</span>
                 </TabsTrigger>
               </TabsList>
 

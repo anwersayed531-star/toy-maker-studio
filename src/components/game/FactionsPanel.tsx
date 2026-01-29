@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { SupportFaction } from '@/types/game';
 import { Shield, Briefcase, BookOpen, Users, GraduationCap, TrendingUp, TrendingDown } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface FactionsPanelProps {
   factions: SupportFaction[];
@@ -26,6 +27,7 @@ const getSupportColor = (support: number) => {
 };
 
 export const FactionsPanel = ({ factions }: FactionsPanelProps) => {
+  const { t } = useLanguage();
   const averageSupport = Math.round(
     factions.reduce((sum, f) => sum + f.support, 0) / factions.length
   );
@@ -35,10 +37,10 @@ export const FactionsPanel = ({ factions }: FactionsPanelProps) => {
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
           <Users className="w-5 h-5 text-primary" />
-          نظام المساندة
+          {t('supportSystem')}
         </h3>
         <div className="flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground">المتوسط:</span>
+          <span className="text-muted-foreground">{t('average')}:</span>
           <span className={`font-bold ${averageSupport >= 50 ? 'text-success' : 'text-destructive'}`}>
             {averageSupport}%
           </span>
@@ -82,7 +84,7 @@ export const FactionsPanel = ({ factions }: FactionsPanelProps) => {
                   className="h-1.5 flex-1"
                 />
                 <span className="text-xs text-muted-foreground whitespace-nowrap">
-                  نفوذ: {faction.influence}%
+                  {t('influence')}: {faction.influence}%
                 </span>
               </div>
 

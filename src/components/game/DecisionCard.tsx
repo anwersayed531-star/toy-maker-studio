@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Decision, Choice } from '@/types/game';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, Shield, Users, Globe, Landmark, Handshake, Heart } from 'lucide-react';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface DecisionCardProps {
   decision: Decision;
@@ -9,6 +10,8 @@ interface DecisionCardProps {
 }
 
 export const DecisionCard = ({ decision, onChoice }: DecisionCardProps) => {
+  const { t } = useLanguage();
+
   const getCategoryIcon = () => {
     switch (decision.category) {
       case 'economy':
@@ -27,15 +30,15 @@ export const DecisionCard = ({ decision, onChoice }: DecisionCardProps) => {
   const getCategoryLabel = () => {
     switch (decision.category) {
       case 'economy':
-        return 'قرار اقتصادي';
+        return t('economicDecision');
       case 'military':
-        return 'قرار عسكري';
+        return t('militaryDecision');
       case 'diplomacy':
-        return 'قرار دبلوماسي';
+        return t('diplomaticDecision');
       case 'social':
-        return 'قرار اجتماعي';
+        return t('socialDecision');
       default:
-        return 'قرار';
+        return t('decision');
     }
   };
 

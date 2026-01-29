@@ -75,7 +75,7 @@ export const GameHeader = ({
           {/* Game Info */}
           <div className="flex items-center gap-2 md:gap-4">
             <div className="text-center hidden sm:block">
-              <p className="text-xs text-muted-foreground">{currentLanguage === 'ar' ? 'السنة' : 'Year'}</p>
+              <p className="text-xs text-muted-foreground">{t('year')}</p>
               <p className="font-bold text-primary text-sm">{gameState.year}</p>
             </div>
             <div className="text-center">
@@ -139,7 +139,7 @@ export const GameHeader = ({
                     </div>
                     <div className="col-span-2 p-3 bg-primary/10 rounded-lg">
                       <p className="text-sm font-medium text-foreground mb-2">
-                        {currentLanguage === 'ar' ? 'أعلى الإحصائيات' : 'Highest Stats'}
+                        {t('highestStats')}
                       </p>
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div className="flex justify-between">

@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Advisor } from '@/types/game';
 import { User, DollarSign, Shield, Globe, Building, MessageSquare } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface AdvisorsPanelProps {
   advisors: Advisor[];
@@ -17,22 +18,24 @@ const getAdvisorIcon = (role: Advisor['role']) => {
   }
 };
 
-const getRoleLabel = (role: Advisor['role']) => {
-  switch (role) {
-    case 'economic': return 'اقتصادي';
-    case 'military': return 'عسكري';
-    case 'diplomatic': return 'دبلوماسي';
-    case 'internal': return 'داخلي';
-    default: return '';
-  }
-};
-
 export const AdvisorsPanel = ({ advisors }: AdvisorsPanelProps) => {
+  const { t } = useLanguage();
+
+  const getRoleLabel = (role: Advisor['role']) => {
+    switch (role) {
+      case 'economic': return t('economicAdvisor');
+      case 'military': return t('militaryAdvisor');
+      case 'diplomatic': return t('diplomaticAdvisor');
+      case 'internal': return t('internalAdvisor');
+      default: return '';
+    }
+  };
+
   return (
     <div className="bg-card rounded-xl border border-border p-4">
       <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
         <User className="w-5 h-5 text-primary" />
-        النظام الإداري
+        {t('adminSystem')}
       </h3>
 
       <div className="grid grid-cols-2 gap-3">
@@ -60,7 +63,7 @@ export const AdvisorsPanel = ({ advisors }: AdvisorsPanelProps) => {
               <div className="space-y-2">
                 <div>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-muted-foreground">الولاء</span>
+                    <span className="text-muted-foreground">{t('loyalty')}</span>
                     <span className={advisor.loyalty >= 50 ? 'text-success' : 'text-destructive'}>
                       {advisor.loyalty}%
                     </span>
@@ -69,7 +72,7 @@ export const AdvisorsPanel = ({ advisors }: AdvisorsPanelProps) => {
                 </div>
                 <div>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-muted-foreground">الكفاءة</span>
+                    <span className="text-muted-foreground">{t('competence')}</span>
                     <span className="text-primary">{advisor.competence}%</span>
                   </div>
                   <Progress value={advisor.competence} className="h-1" />
