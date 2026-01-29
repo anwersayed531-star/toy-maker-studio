@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Region } from '@/types/game';
 import { MapPin, Users, TrendingUp, Heart, AlertTriangle, Sparkles, Flame, Shield } from 'lucide-react';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface CountryMapProps {
   regions: Region[];
@@ -73,17 +74,18 @@ const getRegionColor = (region: Region, isSelected: boolean, isHovered: boolean)
 };
 
 export const CountryMap = ({ regions, selectedRegion, onSelectRegion, activeEvent }: CountryMapProps) => {
+  const { t } = useLanguage();
   const selected = regions.find(r => r.id === selectedRegion);
 
   return (
     <div className="bg-card rounded-xl border border-border p-4">
       <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
         <MapPin className="w-5 h-5 text-primary" />
-        خريطة الدولة
+        {t('countryMap')}
         {activeEvent && (
           <span className="flex items-center gap-1 text-sm text-destructive animate-pulse">
             <Flame className="w-4 h-4" />
-            حدث طارئ!
+            {t('emergencyEvent')}
           </span>
         )}
       </h3>
@@ -255,15 +257,15 @@ export const CountryMap = ({ regions, selectedRegion, onSelectRegion, activeEven
       <div className="mt-3 flex flex-wrap justify-center gap-3 text-xs">
         <div className="flex items-center gap-1">
           <div className="w-3 h-3 rounded-full bg-green-600" />
-          <span className="text-muted-foreground">مستقر</span>
+          <span className="text-muted-foreground">{t('stable')}</span>
         </div>
         <div className="flex items-center gap-1">
           <div className="w-3 h-3 rounded-full bg-yellow-500" />
-          <span className="text-muted-foreground">متوسط</span>
+          <span className="text-muted-foreground">{t('moderate')}</span>
         </div>
         <div className="flex items-center gap-1">
           <div className="w-3 h-3 rounded-full bg-red-500" />
-          <span className="text-muted-foreground">خطر</span>
+          <span className="text-muted-foreground">{t('danger')}</span>
         </div>
       </div>
 
@@ -280,14 +282,14 @@ export const CountryMap = ({ regions, selectedRegion, onSelectRegion, activeEven
               {selected.name}
             </h4>
             <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-              {selected.population}M نسمة
+              {selected.population}M {t('population')}
             </span>
           </div>
           
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-success" />
-              <span className="text-muted-foreground">الاقتصاد:</span>
+              <span className="text-muted-foreground">{t('economy')}:</span>
               <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-success transition-all"
@@ -298,7 +300,7 @@ export const CountryMap = ({ regions, selectedRegion, onSelectRegion, activeEven
             </div>
             <div className="flex items-center gap-2">
               <Heart className="w-4 h-4 text-primary" />
-              <span className="text-muted-foreground">الولاء:</span>
+              <span className="text-muted-foreground">{t('loyalty')}:</span>
               <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-primary transition-all"
@@ -309,7 +311,7 @@ export const CountryMap = ({ regions, selectedRegion, onSelectRegion, activeEven
             </div>
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-blue-400" />
-              <span className="text-muted-foreground">التنمية:</span>
+              <span className="text-muted-foreground">{t('development')}:</span>
               <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-blue-400 transition-all"
@@ -320,7 +322,7 @@ export const CountryMap = ({ regions, selectedRegion, onSelectRegion, activeEven
             </div>
             <div className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-warning" />
-              <span className="text-muted-foreground">الاضطرابات:</span>
+              <span className="text-muted-foreground">{t('unrest')}:</span>
               <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                 <div 
                   className={`h-full transition-all ${selected.unrest > 50 ? 'bg-destructive' : 'bg-warning'}`}
@@ -336,11 +338,11 @@ export const CountryMap = ({ regions, selectedRegion, onSelectRegion, activeEven
           <div className="mt-3 flex flex-wrap gap-1">
             {selected.resources.map(resource => (
               <span key={resource} className="px-2 py-0.5 bg-primary/20 text-primary text-xs rounded-full">
-                {resource === 'oil' && '🛢️ نفط'}
-                {resource === 'agriculture' && '🌾 زراعة'}
-                {resource === 'industry' && '🏭 صناعة'}
-                {resource === 'tourism' && '🏖️ سياحة'}
-                {resource === 'mining' && '⛏️ تعدين'}
+                {resource === 'oil' && `🛢️ ${t('oil')}`}
+                {resource === 'agriculture' && `🌾 ${t('agriculture')}`}
+                {resource === 'industry' && `🏭 ${t('industry')}`}
+                {resource === 'tourism' && `🏖️ ${t('tourism')}`}
+                {resource === 'mining' && `⛏️ ${t('mining')}`}
               </span>
             ))}
           </div>
