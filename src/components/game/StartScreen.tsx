@@ -4,6 +4,7 @@ import { Crown, Play, Landmark, RotateCcw, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useLanguage } from '@/hooks/useLanguage';
+import { LanguageSelector } from './LanguageSelector';
 import gameLogo from '@/assets/game-logo.png';
 
 interface SaveInfo {
@@ -50,6 +51,11 @@ export const StartScreen = ({ onStart, onLoadGame, hasSavedGame, saveInfo }: Sta
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4" dir={isRTL ? 'rtl' : 'ltr'}>
+      {/* Language Selector - Top Right */}
+      <div className="fixed top-4 right-4 z-50">
+        <LanguageSelector />
+      </div>
+
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -132,7 +138,7 @@ export const StartScreen = ({ onStart, onLoadGame, hasSavedGame, saveInfo }: Sta
           <div className="space-y-2">
             <label className="text-sm text-muted-foreground flex items-center gap-2">
               <Landmark className="w-4 h-4 text-primary" />
-              {currentLanguage === 'ar' ? 'اسم الدولة' : 'Country Name'}
+              {t('countryName')}
             </label>
             <Input
               value={countryName}
