@@ -38,6 +38,7 @@ export interface Translation {
   continueGame: string;
   loadGame: string;
   enterName: string;
+  countryName: string;
   startGame: string;
   autoSaveEnabled: string;
   notificationsReminder: string;
@@ -142,6 +143,7 @@ const defaultTranslation: Translation = {
   continueGame: 'استمرار',
   loadGame: 'تحميل اللعبة',
   enterName: 'أدخل اسم الرئيس',
+  countryName: 'اسم الدولة',
   startGame: 'ابدأ اللعبة',
   autoSaveEnabled: 'الحفظ التلقائي مفعّل',
   notificationsReminder: 'تذكير كل 15 ساعة',
@@ -226,6 +228,7 @@ const enTranslation: Translation = {
   continueGame: 'Continue',
   loadGame: 'Load Game',
   enterName: 'Enter President Name',
+  countryName: 'Country Name',
   startGame: 'Start Game',
   autoSaveEnabled: 'Auto-save Enabled',
   notificationsReminder: 'Reminder every 15 hours',
