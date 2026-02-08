@@ -3,6 +3,7 @@ import { Decision, Choice } from '@/types/game';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, Shield, Users, Globe, Landmark, Handshake, Heart } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
+import { getDecisionTranslation } from '@/i18n/decisionTranslations';
 
 interface DecisionCardProps {
   decision: Decision;
@@ -10,7 +11,16 @@ interface DecisionCardProps {
 }
 
 export const DecisionCard = ({ decision, onChoice }: DecisionCardProps) => {
-  const { t } = useLanguage();
+  const { t, currentLanguage } = useLanguage();
+  
+  // Get translated decision content
+  const translatedDecision = getDecisionTranslation(decision.id, currentLanguage);
+  const title = translatedDecision?.title || decision.title;
+  const description = translatedDecision?.description || decision.description;
+  
+  const getChoiceText = (choice: Choice) => {
+    return translatedDecision?.choices?.[choice.id] || choice.text;
+  };
 
   const getCategoryIcon = () => {
     switch (decision.category) {
@@ -57,7 +67,7 @@ export const DecisionCard = ({ decision, onChoice }: DecisionCardProps) => {
           </div>
           <div>
             <p className="text-xs text-muted-foreground">{getCategoryLabel()}</p>
-            <h3 className="text-lg font-bold text-foreground">{decision.title}</h3>
+            <h3 className="text-lg font-bold text-foreground">{title}</h3>
           </div>
         </div>
       </div>
@@ -65,7 +75,7 @@ export const DecisionCard = ({ decision, onChoice }: DecisionCardProps) => {
       {/* Description */}
       <div className="p-6">
         <p className="text-foreground text-center mb-6 leading-relaxed">
-          {decision.description}
+          {description}
         </p>
 
         {/* Choices */}
@@ -83,7 +93,7 @@ export const DecisionCard = ({ decision, onChoice }: DecisionCardProps) => {
                 onClick={() => onChoice(choice)}
               >
                 <span className="text-primary ml-3 font-bold">{index + 1}.</span>
-                <span>{choice.text}</span>
+                <span>{getChoiceText(choice)}</span>
               </Button>
             </motion.div>
           ))}
