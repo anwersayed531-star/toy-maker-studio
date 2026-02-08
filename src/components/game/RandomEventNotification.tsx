@@ -1,6 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { RandomEvent } from '@/data/randomEvents';
 import { AlertTriangle, Flame, CloudRain, Skull, Swords, Building, Users } from 'lucide-react';
+import { useLanguage } from '@/hooks/useLanguage';
+import { getEventTranslation, getSeverityText } from '@/i18n/eventTranslations';
 
 interface RandomEventNotificationProps {
   event: RandomEvent | null;
@@ -41,23 +43,16 @@ const getSeverityColor = (severity: RandomEvent['severity']) => {
   }
 };
 
-const getSeverityText = (severity: RandomEvent['severity']) => {
-  switch (severity) {
-    case 'critical':
-      return 'حرج!';
-    case 'high':
-      return 'خطير';
-    case 'medium':
-      return 'متوسط';
-    case 'low':
-      return 'بسيط';
-    default:
-      return '';
-  }
-};
-
 export const RandomEventNotification = ({ event, isVisible }: RandomEventNotificationProps) => {
+  const { currentLanguage } = useLanguage();
+  
   if (!event) return null;
+
+  // Get translated event content
+  const translatedEvent = getEventTranslation(event.id, currentLanguage);
+  const title = translatedEvent?.title || event.title;
+  const description = translatedEvent?.description || event.description;
+  const severityText = getSeverityText(event.severity, currentLanguage);
 
   return (
     <AnimatePresence>
@@ -91,17 +86,17 @@ export const RandomEventNotification = ({ event, isVisible }: RandomEventNotific
                 event.severity === 'medium' ? 'bg-yellow-500 text-black' :
                 'bg-blue-500 text-white'}`}
             >
-              {getSeverityText(event.severity)}
+              {severityText}
             </div>
 
             {/* Event title */}
             <h2 className="text-2xl font-bold text-white mb-2">
-              {event.title}
+              {title}
             </h2>
 
             {/* Event description */}
             <p className="text-gray-200 text-sm">
-              {event.description}
+              {description}
             </p>
 
             {/* Animated border effect */}
