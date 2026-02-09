@@ -3,6 +3,7 @@ import { SupportFaction } from '@/types/game';
 import { Shield, Briefcase, BookOpen, Users, GraduationCap, TrendingUp, TrendingDown } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { useLanguage } from '@/hooks/useLanguage';
+import { getFactionName } from '@/i18n/entityTranslations';
 
 interface FactionsPanelProps {
   factions: SupportFaction[];
@@ -27,7 +28,7 @@ const getSupportColor = (support: number) => {
 };
 
 export const FactionsPanel = ({ factions }: FactionsPanelProps) => {
-  const { t } = useLanguage();
+  const { t, currentLanguage } = useLanguage();
   const averageSupport = Math.round(
     factions.reduce((sum, f) => sum + f.support, 0) / factions.length
   );
@@ -64,7 +65,7 @@ export const FactionsPanel = ({ factions }: FactionsPanelProps) => {
                   <div className={`p-1.5 rounded-lg ${getSupportColor(faction.support)} bg-opacity-20`}>
                     <Icon className={`w-4 h-4 ${faction.support >= 50 ? 'text-success' : 'text-destructive'}`} />
                   </div>
-                  <span className="font-medium text-foreground text-sm">{faction.name}</span>
+                  <span className="font-medium text-foreground text-sm">{getFactionName(faction.id, currentLanguage)}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   {faction.support >= 50 ? (

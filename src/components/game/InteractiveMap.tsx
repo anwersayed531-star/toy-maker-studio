@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
 import { Region } from '@/types/game';
 import { MapPin, Users, TrendingUp, Heart, AlertTriangle } from 'lucide-react';
+import { useLanguage } from '@/hooks/useLanguage';
+import { getRegionName } from '@/i18n/entityTranslations';
 
 interface InteractiveMapProps {
   regions: Region[];
@@ -25,13 +27,14 @@ const getRegionColor = (region: Region) => {
 };
 
 export const InteractiveMap = ({ regions, selectedRegion, onSelectRegion }: InteractiveMapProps) => {
+  const { t, currentLanguage } = useLanguage();
   const selected = regions.find(r => r.id === selectedRegion);
 
   return (
     <div className="bg-card rounded-xl border border-border p-4">
       <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
         <MapPin className="w-5 h-5 text-primary" />
-        خريطة المناطق
+        {t('countryMap')}
       </h3>
       
       {/* Map Container */}
@@ -70,7 +73,7 @@ export const InteractiveMap = ({ regions, selectedRegion, onSelectRegion }: Inte
               whileTap={{ scale: 0.98 }}
             >
               <span className="text-white font-bold text-shadow drop-shadow-lg">
-                {region.name}
+                {getRegionName(region.id, currentLanguage)}
               </span>
               {region.unrest > 40 && (
                 <AlertTriangle className="w-3 h-3 text-white mt-1 animate-pulse" />
@@ -87,27 +90,27 @@ export const InteractiveMap = ({ regions, selectedRegion, onSelectRegion }: Inte
           animate={{ opacity: 1, y: 0 }}
           className="mt-4 p-4 bg-muted/50 rounded-lg border border-border/50"
         >
-          <h4 className="font-bold text-foreground mb-3">{selected.name}</h4>
+          <h4 className="font-bold text-foreground mb-3">{getRegionName(selected.id, currentLanguage)}</h4>
           
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-muted-foreground" />
-              <span className="text-muted-foreground">السكان:</span>
+              <span className="text-muted-foreground">{t('population')}:</span>
               <span className="font-medium text-foreground">{selected.population}M</span>
             </div>
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-success" />
-              <span className="text-muted-foreground">الاقتصاد:</span>
+              <span className="text-muted-foreground">{t('economy')}:</span>
               <span className="font-medium text-foreground">{selected.economy}%</span>
             </div>
             <div className="flex items-center gap-2">
               <Heart className="w-4 h-4 text-primary" />
-              <span className="text-muted-foreground">الولاء:</span>
+              <span className="text-muted-foreground">{t('loyalty')}:</span>
               <span className="font-medium text-foreground">{selected.loyalty}%</span>
             </div>
             <div className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-warning" />
-              <span className="text-muted-foreground">الاضطرابات:</span>
+              <span className="text-muted-foreground">{t('unrest')}:</span>
               <span className={`font-medium ${selected.unrest > 50 ? 'text-destructive' : 'text-foreground'}`}>
                 {selected.unrest}%
               </span>
@@ -117,11 +120,11 @@ export const InteractiveMap = ({ regions, selectedRegion, onSelectRegion }: Inte
           <div className="mt-3 flex flex-wrap gap-1">
             {selected.resources.map(resource => (
               <span key={resource} className="px-2 py-0.5 bg-primary/20 text-primary text-xs rounded-full">
-                {resource === 'oil' && 'نفط'}
-                {resource === 'agriculture' && 'زراعة'}
-                {resource === 'industry' && 'صناعة'}
-                {resource === 'tourism' && 'سياحة'}
-                {resource === 'mining' && 'تعدين'}
+                {resource === 'oil' && `🛢️ ${t('oil')}`}
+                {resource === 'agriculture' && `🌾 ${t('agriculture')}`}
+                {resource === 'industry' && `🏭 ${t('industry')}`}
+                {resource === 'tourism' && `🏖️ ${t('tourism')}`}
+                {resource === 'mining' && `⛏️ ${t('mining')}`}
               </span>
             ))}
           </div>

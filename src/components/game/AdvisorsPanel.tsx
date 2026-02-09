@@ -3,6 +3,7 @@ import { Advisor } from '@/types/game';
 import { User, DollarSign, Shield, Globe, Building, MessageSquare } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { useLanguage } from '@/hooks/useLanguage';
+import { getAdvisorName } from '@/i18n/entityTranslations';
 
 interface AdvisorsPanelProps {
   advisors: Advisor[];
@@ -19,7 +20,7 @@ const getAdvisorIcon = (role: Advisor['role']) => {
 };
 
 export const AdvisorsPanel = ({ advisors }: AdvisorsPanelProps) => {
-  const { t } = useLanguage();
+  const { t, currentLanguage } = useLanguage();
 
   const getRoleLabel = (role: Advisor['role']) => {
     switch (role) {
@@ -55,7 +56,7 @@ export const AdvisorsPanel = ({ advisors }: AdvisorsPanelProps) => {
                   <Icon className="w-4 h-4 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-foreground text-sm truncate">{advisor.name}</p>
+                  <p className="font-medium text-foreground text-sm truncate">{getAdvisorName(advisor.id, currentLanguage)}</p>
                   <p className="text-xs text-muted-foreground">{getRoleLabel(advisor.role)}</p>
                 </div>
               </div>
