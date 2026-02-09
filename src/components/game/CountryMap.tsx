@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Region } from '@/types/game';
 import { MapPin, Users, TrendingUp, Heart, AlertTriangle, Sparkles, Flame, Shield } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
+import { getRegionName } from '@/i18n/entityTranslations';
 
 interface CountryMapProps {
   regions: Region[];
@@ -74,7 +75,7 @@ const getRegionColor = (region: Region, isSelected: boolean, isHovered: boolean)
 };
 
 export const CountryMap = ({ regions, selectedRegion, onSelectRegion, activeEvent }: CountryMapProps) => {
-  const { t } = useLanguage();
+  const { t, currentLanguage } = useLanguage();
   const selected = regions.find(r => r.id === selectedRegion);
 
   return (
@@ -187,7 +188,7 @@ export const CountryMap = ({ regions, selectedRegion, onSelectRegion, activeEven
                     fontSize: region.id === 'capital' ? '9px' : '11px'
                   }}
                 >
-                  {region.name}
+                  {getRegionName(region.id, currentLanguage)}
                 </text>
 
                 {/* Unrest indicator */}
@@ -279,7 +280,7 @@ export const CountryMap = ({ regions, selectedRegion, onSelectRegion, activeEven
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-bold text-foreground flex items-center gap-2">
               {selected.id === 'capital' && <Shield className="w-4 h-4 text-primary" />}
-              {selected.name}
+              {getRegionName(selected.id, currentLanguage)}
             </h4>
             <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
               {selected.population}M {t('population')}

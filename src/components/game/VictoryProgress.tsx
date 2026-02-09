@@ -3,6 +3,7 @@ import { VictoryCondition } from '@/types/game';
 import { Trophy, TrendingUp, Shield, Globe, Heart, Check } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { useLanguage } from '@/hooks/useLanguage';
+import { getVictoryName } from '@/i18n/entityTranslations';
 
 interface VictoryProgressProps {
   conditions: VictoryCondition[];
@@ -23,7 +24,7 @@ const getProgressPercent = (current: number, target: number) => {
 };
 
 export const VictoryProgress = ({ conditions }: VictoryProgressProps) => {
-  const { t } = useLanguage();
+  const { t, currentLanguage } = useLanguage();
   const completedCount = conditions.filter(c => c.completed).length;
 
   return (
@@ -65,8 +66,8 @@ export const VictoryProgress = ({ conditions }: VictoryProgressProps) => {
                     )}
                   </div>
                   <div>
-                    <span className="font-medium text-foreground text-sm">{condition.name}</span>
-                    <p className="text-xs text-muted-foreground">{condition.description}</p>
+                    <span className="font-medium text-foreground text-sm">{getVictoryName(condition.id, currentLanguage).name}</span>
+                    <p className="text-xs text-muted-foreground">{getVictoryName(condition.id, currentLanguage).description}</p>
                   </div>
                 </div>
                 <span className={`text-sm font-bold ${condition.completed ? 'text-success' : 'text-primary'}`}>
