@@ -151,10 +151,10 @@ const initialFactions: SupportFaction[] = [
 ];
 
 const initialVictoryConditions: VictoryCondition[] = [
-  { id: 'economic_victory', name: 'الازدهار الاقتصادي', description: 'وصول الاقتصاد إلى 90+', type: 'economic', targetValue: 90, currentValue: 50, completed: false },
-  { id: 'military_victory', name: 'القوة العسكرية', description: 'وصول القوة العسكرية إلى 90+', type: 'military', targetValue: 90, currentValue: 50, completed: false },
-  { id: 'diplomatic_victory', name: 'الهيمنة الدبلوماسية', description: 'وصول الدبلوماسية إلى 90+', type: 'diplomatic', targetValue: 90, currentValue: 50, completed: false },
-  { id: 'popular_victory', name: 'الزعيم المحبوب', description: 'وصول الشعبية إلى 95+', type: 'popular', targetValue: 95, currentValue: 60, completed: false },
+  { id: 'economic_victory', name: 'الازدهار الاقتصادي', description: 'وصول الاقتصاد إلى 90+', type: 'economic', targetValue: 90, currentValue: 45, completed: false },
+  { id: 'military_victory', name: 'القوة العسكرية', description: 'وصول القوة العسكرية إلى 90+', type: 'military', targetValue: 90, currentValue: 45, completed: false },
+  { id: 'diplomatic_victory', name: 'الهيمنة الدبلوماسية', description: 'وصول الدبلوماسية إلى 90+', type: 'diplomatic', targetValue: 90, currentValue: 45, completed: false },
+  { id: 'popular_victory', name: 'الزعيم المحبوب', description: 'وصول الشعبية إلى 95+', type: 'popular', targetValue: 95, currentValue: 50, completed: false },
 ];
 
 export const initialGameState: GameState = {
@@ -162,11 +162,11 @@ export const initialGameState: GameState = {
   presidentName: 'الرئيس',
   year: 2024,
   month: 1,
-  economy: 50,
-  military: 50,
-  popularity: 60,
-  diplomacy: 50,
-  treasury: 100,
+  economy: 45,
+  military: 45,
+  popularity: 50,
+  diplomacy: 45,
+  treasury: 80,
   population: 50,
   regions: initialRegions,
   advisors: initialAdvisors,

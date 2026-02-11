@@ -6,6 +6,9 @@ import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useGameSave } from '@/hooks/useGameSave';
 import { useAutoSave, loadAutoSave, hasAutoSave, clearAutoSave } from '@/hooks/useAutoSave';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useLanguage } from '@/hooks/useLanguage';
+import { getGameOverTranslation } from '@/i18n/gameOverTranslations';
+import { getRegionName } from '@/i18n/entityTranslations';
 
 export const useGameLogic = () => {
   const [gameState, setGameState] = useState<GameState>(initialGameState);
@@ -21,6 +24,7 @@ export const useGameLogic = () => {
   const { playSound, toggleSound, isSoundEnabled } = useSoundEffects();
   const { saveGame, loadGame, hasSavedGame, deleteSave, getSaveInfo, getStats, updateStats } = useGameSave();
   const { scheduleReminder, cancelReminder } = useNotifications();
+  const { currentLanguage } = useLanguage();
 
   // Auto-save hook
   useAutoSave(gameStarted, gameState, usedDecisions, currentDecision);
@@ -65,28 +69,30 @@ export const useGameLogic = () => {
   const checkGameOver = useCallback((state: GameState): GameState => {
     if (state.gameWon) return state;
 
+    const t = getGameOverTranslation(currentLanguage);
     let gameOverReason: string | undefined;
 
     if (state.economy <= 0) {
-      gameOverReason = 'انهار الاقتصاد! أصبحت البلاد مفلسة.';
+      gameOverReason = t.economyCollapse;
     } else if (state.military <= 0) {
-      gameOverReason = 'انهار الجيش! تم غزو البلاد.';
+      gameOverReason = t.militaryCollapse;
     } else if (state.popularity <= 0) {
-      gameOverReason = 'ثورة شعبية! تم عزلك من منصبك.';
+      gameOverReason = t.revolution;
     } else if (state.diplomacy <= 0) {
-      gameOverReason = 'عزلة دولية! فرضت عقوبات قاتلة على البلاد.';
-    } else if (state.treasury <= -50) {
-      gameOverReason = 'إفلاس تام! لم تستطع البلاد سداد ديونها.';
+      gameOverReason = t.internationalIsolation;
+    } else if (state.treasury <= -30) {
+      gameOverReason = t.totalBankruptcy;
     }
 
     const militaryFaction = state.factions.find(f => f.id === 'military_faction');
-    if (militaryFaction && militaryFaction.support <= 10) {
-      gameOverReason = 'انقلاب عسكري! الجيش أطاح بك من السلطة.';
+    if (militaryFaction && militaryFaction.support <= 15) {
+      gameOverReason = t.militaryCoup;
     }
 
-    const rebelliousRegion = state.regions.find(r => r.unrest >= 90);
+    const rebelliousRegion = state.regions.find(r => r.unrest >= 85);
     if (rebelliousRegion) {
-      gameOverReason = `تمرد في ${rebelliousRegion.name}! فقدت السيطرة على البلاد.`;
+      const regionName = getRegionName(rebelliousRegion.id, currentLanguage);
+      gameOverReason = t.regionRebellion(regionName);
     }
 
     if (gameOverReason) {
@@ -94,7 +100,7 @@ export const useGameLogic = () => {
     }
 
     return state;
-  }, []);
+  }, [currentLanguage]);
 
   const processFollowUpEvents = useCallback((state: GameState): { state: GameState; triggeredEvent: Decision | null } => {
     const updatedEvents = state.pendingEvents.map(event => ({
@@ -120,16 +126,13 @@ export const useGameLogic = () => {
   }, []);
 
   const processRandomEvents = useCallback((state: GameState): { state: GameState; randomEvent: RandomEvent | null } => {
-    // Update cooldowns
     const updatedCooldowns = state.eventCooldowns
       .map(c => ({ ...c, turnsRemaining: c.turnsRemaining - 1 }))
       .filter(c => c.turnsRemaining > 0);
 
-    // Check for random event
     const randomEvent = getRandomEvent(state.turnCount, updatedCooldowns);
     
     if (randomEvent) {
-      // Add cooldown for this event
       updatedCooldowns.push({
         eventId: randomEvent.id,
         turnsRemaining: randomEvent.cooldown,
@@ -157,11 +160,21 @@ export const useGameLogic = () => {
       newYear += 1;
     }
 
+    // Harder: stats decay more aggressively
     const updatedRegions = state.regions.map(region => ({
       ...region,
-      unrest: Math.max(0, Math.min(100, region.unrest + (region.loyalty < 40 ? 5 : -2))),
-      loyalty: Math.max(0, Math.min(100, region.loyalty + (region.unrest > 50 ? -3 : 1))),
+      unrest: Math.max(0, Math.min(100, region.unrest + (region.loyalty < 50 ? 8 : -1))),
+      loyalty: Math.max(0, Math.min(100, region.loyalty + (region.unrest > 40 ? -5 : 1))),
     }));
+
+    // Natural stat decay each turn (makes the game harder)
+    const decay = {
+      economy: state.economy > 60 ? -2 : (state.economy < 30 ? -3 : -1),
+      popularity: state.popularity > 60 ? -3 : -1,
+      military: state.military > 60 ? -1 : -2,
+      diplomacy: state.diplomacy > 60 ? -1 : -2,
+      treasury: -3,
+    };
 
     return {
       ...state,
@@ -169,6 +182,11 @@ export const useGameLogic = () => {
       year: newYear,
       turnCount: state.turnCount + 1,
       regions: updatedRegions,
+      economy: Math.max(0, Math.min(100, state.economy + decay.economy)),
+      popularity: Math.max(0, Math.min(100, state.popularity + decay.popularity)),
+      military: Math.max(0, Math.min(100, state.military + decay.military)),
+      diplomacy: Math.max(0, Math.min(100, state.diplomacy + decay.diplomacy)),
+      treasury: state.treasury + decay.treasury,
     };
   }, []);
 
@@ -189,7 +207,6 @@ export const useGameLogic = () => {
   }, [saveGame, gameState, usedDecisions, currentDecision, playSound]);
 
   const handleLoadGame = useCallback(() => {
-    // Try manual save first, then auto-save
     const saved = loadGame() || loadAutoSave();
     if (saved) {
       setGameState(saved.gameState);
@@ -203,7 +220,7 @@ export const useGameLogic = () => {
         setCurrentDecision(getRandomDecision(saved.usedDecisions));
       }
       playSound('success');
-      cancelReminder(); // Cancel reminder when game is loaded
+      cancelReminder();
     }
   }, [loadGame, playSound, cancelReminder]);
 
@@ -219,7 +236,7 @@ export const useGameLogic = () => {
     setCurrentRandomEvent(null);
     deleteSave();
     clearAutoSave();
-    cancelReminder(); // Cancel any pending reminders
+    cancelReminder();
 
     const decision = getRandomDecision([]);
     setCurrentDecision(decision);
@@ -308,7 +325,6 @@ export const useGameLogic = () => {
     const { state: stateAfterEvents, triggeredEvent } = processFollowUpEvents(updatedState);
     updatedState = stateAfterEvents;
 
-    // Check for random events
     const { state: stateAfterRandom, randomEvent } = processRandomEvents(updatedState);
     updatedState = stateAfterRandom;
 
@@ -322,26 +338,24 @@ export const useGameLogic = () => {
       updateStats(updatedState, true);
       deleteSave();
       clearAutoSave();
-      scheduleReminder(); // Schedule reminder after game ends
+      scheduleReminder();
     } else if (updatedState.gameOver) {
       setTimeout(() => playSound('gameOver'), 500);
       updateStats(updatedState, false);
       deleteSave();
       clearAutoSave();
-      scheduleReminder(); // Schedule reminder after game ends
+      scheduleReminder();
     }
 
     setTimeout(() => {
       setShowEffects(false);
       
       if (!updatedState.gameOver && !updatedState.gameWon) {
-        // Check if random event should be shown
         if (randomEvent) {
           setCurrentRandomEvent(randomEvent);
           setShowRandomEventNotification(true);
           playSound('warning');
           
-          // Show notification for 3 seconds then show the event as a decision
           setTimeout(() => {
             setShowRandomEventNotification(false);
             setCurrentDecision(randomEvent);
