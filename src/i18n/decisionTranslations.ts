@@ -188,6 +188,47 @@ const arDecisions: DecisionTranslations = {
       break_strike: 'كسر الإضراب بالقوة',
     },
   },
+  // New decisions
+  cyber_attack: {
+    title: 'هجوم سيبراني',
+    description: 'هجوم إلكتروني يستهدف البنية التحتية الرقمية للدولة.',
+    choices: { cyber_defense: 'تشكيل وحدة دفاع سيبراني', cyber_retaliation: 'شن هجوم مضاد', international_help: 'طلب مساعدة دولية' },
+  },
+  media_freedom: {
+    title: 'حرية الإعلام',
+    description: 'صحفيون يطالبون بمزيد من الحرية الإعلامية.',
+    choices: { free_press: 'رفع جميع القيود', partial_freedom: 'حرية محدودة', tighten_control: 'تشديد الرقابة' },
+  },
+  housing_crisis: {
+    title: 'أزمة إسكان',
+    description: 'ارتفاع أسعار العقارات. الشباب لا يستطيعون شراء منازل.',
+    choices: { public_housing: 'بناء إسكان حكومي', regulate_market: 'تنظيم السوق', free_market: 'ترك السوق حراً' },
+  },
+  space_program: {
+    title: 'برنامج فضائي',
+    description: 'علماء يقترحون إطلاق برنامج فضائي وطني.',
+    choices: { full_program: 'برنامج فضائي شامل', satellite_only: 'أقمار صناعية فقط', cancel_program: 'إلغاء البرنامج' },
+  },
+  drug_epidemic: {
+    title: 'أزمة مخدرات',
+    description: 'انتشار واسع للمخدرات بين الشباب.',
+    choices: { war_on_drugs: 'حرب على المخدرات', rehabilitation: 'برامج تأهيل', ignore_problem: 'تجاهل المشكلة' },
+  },
+  immigration_policy: {
+    title: 'سياسة الهجرة',
+    description: 'تزايد أعداد المهاجرين يثير جدلاً واسعاً.',
+    choices: { open_immigration: 'فتح الهجرة', selective_immigration: 'هجرة انتقائية', restrict_immigration: 'تقييد الهجرة' },
+  },
+  climate_change: {
+    title: 'تغير المناخ',
+    description: 'تقارير علمية تحذر من كوارث مناخية.',
+    choices: { green_revolution: 'ثورة خضراء شاملة', gradual_transition: 'انتقال تدريجي', deny_climate: 'تجاهل التحذيرات' },
+  },
+  food_safety: {
+    title: 'سلامة الغذاء',
+    description: 'فضيحة تلوث غذائي تصيب آلاف المواطنين.',
+    choices: { strict_regulations: 'قوانين صارمة', investigation: 'تحقيق ومعاقبة', downplay: 'التقليل من الخطورة' },
+  },
 };
 
 // English translations
@@ -367,9 +408,49 @@ const enDecisions: DecisionTranslations = {
       break_strike: 'Break the strike by force',
     },
   },
+  // New decisions
+  cyber_attack: {
+    title: 'Cyber Attack',
+    description: 'A cyber attack targets the national digital infrastructure. Banking and government systems are down.',
+    choices: { cyber_defense: 'Form specialized cyber defense unit', cyber_retaliation: 'Launch counter-attack', international_help: 'Request international tech help' },
+  },
+  media_freedom: {
+    title: 'Media Freedom',
+    description: 'Journalists demand more press freedom and lifting restrictions.',
+    choices: { free_press: 'Lift all press restrictions', partial_freedom: 'Limited freedom with security oversight', tighten_control: 'Tighten media control' },
+  },
+  housing_crisis: {
+    title: 'Housing Crisis',
+    description: 'Real estate prices skyrocketing. Youth cannot afford homes.',
+    choices: { public_housing: 'Build massive public housing', regulate_market: 'Regulate the real estate market', free_market: 'Let the free market decide' },
+  },
+  space_program: {
+    title: 'Space Program',
+    description: 'Scientists propose launching a national space program.',
+    choices: { full_program: 'Full space program', satellite_only: 'Satellites only', cancel_program: 'Cancel and fund education' },
+  },
+  drug_epidemic: {
+    title: 'Drug Epidemic',
+    description: 'Widespread drug abuse among youth. Addiction rates at alarming levels.',
+    choices: { war_on_drugs: 'All-out war on drugs', rehabilitation: 'Rehabilitation programs', ignore_problem: 'Ignore the problem' },
+  },
+  immigration_policy: {
+    title: 'Immigration Policy',
+    description: 'Rising immigration sparks heated debate across society.',
+    choices: { open_immigration: 'Open immigration for talent', selective_immigration: 'Selective skilled immigration', restrict_immigration: 'Strict immigration restrictions' },
+  },
+  climate_change: {
+    title: 'Climate Change',
+    description: 'Scientific reports warn of imminent climate disasters.',
+    choices: { green_revolution: 'Comprehensive green revolution', gradual_transition: 'Gradual clean energy transition', deny_climate: 'Ignore warnings, focus on growth' },
+  },
+  food_safety: {
+    title: 'Food Safety',
+    description: 'Food contamination scandal affects thousands of citizens.',
+    choices: { strict_regulations: 'Strict food safety laws', investigation: 'Investigate and punish', downplay: 'Downplay the severity' },
+  },
 };
 
-// Spanish translations
 const esDecisions: DecisionTranslations = {
   tax_reform: {
     title: 'Reforma Fiscal',

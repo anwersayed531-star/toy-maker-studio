@@ -555,6 +555,254 @@ export const decisions: Decision[] = [
       },
     ],
   },
+  // New decisions for more content
+  {
+    id: 'cyber_attack',
+    title: 'هجوم سيبراني',
+    description: 'هجوم إلكتروني يستهدف البنية التحتية الرقمية للدولة. الأنظمة المصرفية والحكومية معطلة.',
+    category: 'military',
+    choices: [
+      {
+        id: 'cyber_defense',
+        text: 'تشكيل وحدة دفاع سيبراني متخصصة',
+        effects: { military: 10, treasury: -35, economy: -5 },
+        factionEffects: [
+          { factionId: 'intellectuals', supportChange: 15 },
+        ],
+      },
+      {
+        id: 'cyber_retaliation',
+        text: 'شن هجوم سيبراني مضاد',
+        effects: { military: 5, diplomacy: -20, treasury: -15 },
+        factionEffects: [
+          { factionId: 'military_faction', supportChange: 15 },
+        ],
+      },
+      {
+        id: 'international_help',
+        text: 'طلب مساعدة تقنية دولية',
+        effects: { diplomacy: 10, treasury: -10, popularity: -5 },
+      },
+    ],
+  },
+  {
+    id: 'media_freedom',
+    title: 'حرية الإعلام',
+    description: 'صحفيون يطالبون بمزيد من الحرية الإعلامية ورفع القيود عن الصحافة.',
+    category: 'social',
+    choices: [
+      {
+        id: 'free_press',
+        text: 'رفع جميع القيود عن الصحافة',
+        effects: { popularity: 15, diplomacy: 15, military: -10 },
+        factionEffects: [
+          { factionId: 'intellectuals', supportChange: 25 },
+          { factionId: 'military_faction', supportChange: -15 },
+        ],
+      },
+      {
+        id: 'partial_freedom',
+        text: 'حرية محدودة مع رقابة على الأمن القومي',
+        effects: { popularity: 5, diplomacy: 5 },
+      },
+      {
+        id: 'tighten_control',
+        text: 'تشديد الرقابة على الإعلام',
+        effects: { popularity: -20, diplomacy: -15, military: 10 },
+        factionEffects: [
+          { factionId: 'intellectuals', supportChange: -25 },
+          { factionId: 'military_faction', supportChange: 10 },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'housing_crisis',
+    title: 'أزمة إسكان',
+    description: 'ارتفاع أسعار العقارات بشكل جنوني. الشباب لا يستطيعون شراء منازل.',
+    category: 'economy',
+    choices: [
+      {
+        id: 'public_housing',
+        text: 'بناء مشاريع إسكان حكومية ضخمة',
+        effects: { treasury: -45, popularity: 20, economy: -5 },
+        factionEffects: [
+          { factionId: 'labor', supportChange: 20 },
+          { factionId: 'business', supportChange: -10 },
+        ],
+        regionEffects: [
+          { regionId: 'capital', effects: { loyalty: 15, unrest: -10 } },
+        ],
+      },
+      {
+        id: 'regulate_market',
+        text: 'تنظيم سوق العقارات وتحديد الأسعار',
+        effects: { economy: -10, popularity: 10, treasury: -5 },
+        factionEffects: [
+          { factionId: 'business', supportChange: -20 },
+        ],
+      },
+      {
+        id: 'free_market',
+        text: 'ترك السوق يحدد الأسعار',
+        effects: { economy: 5, popularity: -15 },
+        factionEffects: [
+          { factionId: 'business', supportChange: 15 },
+          { factionId: 'labor', supportChange: -15 },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'space_program',
+    title: 'برنامج فضائي',
+    description: 'علماء يقترحون إطلاق برنامج فضائي وطني لتعزيز مكانة الدولة.',
+    category: 'diplomacy',
+    choices: [
+      {
+        id: 'full_program',
+        text: 'إطلاق برنامج فضائي شامل',
+        effects: { diplomacy: 20, popularity: 15, treasury: -50, economy: 5 },
+        factionEffects: [
+          { factionId: 'intellectuals', supportChange: 30 },
+          { factionId: 'military_faction', supportChange: 10 },
+        ],
+      },
+      {
+        id: 'satellite_only',
+        text: 'التركيز على الأقمار الصناعية فقط',
+        effects: { diplomacy: 10, treasury: -20, military: 5 },
+      },
+      {
+        id: 'cancel_program',
+        text: 'إلغاء البرنامج وتوجيه الأموال للتعليم',
+        effects: { popularity: 5, treasury: 10 },
+        factionEffects: [
+          { factionId: 'intellectuals', supportChange: -10 },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'drug_epidemic',
+    title: 'أزمة مخدرات',
+    description: 'انتشار واسع للمخدرات بين الشباب. معدلات الإدمان في ارتفاع خطير.',
+    category: 'social',
+    choices: [
+      {
+        id: 'war_on_drugs',
+        text: 'حرب شاملة على المخدرات',
+        effects: { military: 5, popularity: 10, treasury: -25, diplomacy: -5 },
+        factionEffects: [
+          { factionId: 'military_faction', supportChange: 15 },
+          { factionId: 'religious', supportChange: 15 },
+        ],
+      },
+      {
+        id: 'rehabilitation',
+        text: 'برامج تأهيل وعلاج المدمنين',
+        effects: { popularity: 5, treasury: -20 },
+        factionEffects: [
+          { factionId: 'intellectuals', supportChange: 15 },
+        ],
+      },
+      {
+        id: 'ignore_problem',
+        text: 'تجاهل المشكلة',
+        effects: { popularity: -15, economy: -10 },
+        regionEffects: [
+          { regionId: 'capital', effects: { unrest: 20, loyalty: -10 } },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'immigration_policy',
+    title: 'سياسة الهجرة',
+    description: 'تزايد أعداد المهاجرين يثير جدلاً واسعاً في المجتمع.',
+    category: 'diplomacy',
+    choices: [
+      {
+        id: 'open_immigration',
+        text: 'فتح أبواب الهجرة لجذب الكفاءات',
+        effects: { economy: 10, diplomacy: 15, popularity: -10 },
+        factionEffects: [
+          { factionId: 'business', supportChange: 15 },
+          { factionId: 'religious', supportChange: -10 },
+        ],
+      },
+      {
+        id: 'selective_immigration',
+        text: 'هجرة انتقائية للكفاءات فقط',
+        effects: { economy: 5, diplomacy: 5 },
+      },
+      {
+        id: 'restrict_immigration',
+        text: 'تقييد الهجرة بشكل صارم',
+        effects: { diplomacy: -15, popularity: 10 },
+        factionEffects: [
+          { factionId: 'military_faction', supportChange: 10 },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'climate_change',
+    title: 'تغير المناخ',
+    description: 'تقارير علمية تحذر من كوارث مناخية وشيكة. العالم يطالب بإجراءات.',
+    category: 'diplomacy',
+    choices: [
+      {
+        id: 'green_revolution',
+        text: 'ثورة خضراء شاملة',
+        effects: { economy: -10, diplomacy: 20, popularity: 10, treasury: -40 },
+        factionEffects: [
+          { factionId: 'intellectuals', supportChange: 25 },
+          { factionId: 'business', supportChange: -15 },
+        ],
+      },
+      {
+        id: 'gradual_transition',
+        text: 'انتقال تدريجي للطاقة النظيفة',
+        effects: { diplomacy: 10, treasury: -15 },
+      },
+      {
+        id: 'deny_climate',
+        text: 'تجاهل التحذيرات والتركيز على النمو',
+        effects: { economy: 10, diplomacy: -20, popularity: -5 },
+        factionEffects: [
+          { factionId: 'business', supportChange: 15 },
+          { factionId: 'intellectuals', supportChange: -20 },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'food_safety',
+    title: 'سلامة الغذاء',
+    description: 'فضيحة تلوث غذائي تصيب آلاف المواطنين. الشعب يطالب بمحاسبة.',
+    category: 'social',
+    choices: [
+      {
+        id: 'strict_regulations',
+        text: 'قوانين صارمة لسلامة الغذاء',
+        effects: { popularity: 15, economy: -10, treasury: -15 },
+        factionEffects: [
+          { factionId: 'business', supportChange: -15 },
+        ],
+      },
+      {
+        id: 'investigation',
+        text: 'تحقيق ومعاقبة المسؤولين',
+        effects: { popularity: 10, economy: -5 },
+      },
+      {
+        id: 'downplay',
+        text: 'التقليل من خطورة الأمر',
+        effects: { popularity: -20, economy: 5 },
+      },
+    ],
+  },
 ];
 
 export const getRandomDecision = (usedDecisions: string[]): Decision | null => {

@@ -3,6 +3,7 @@ import { GameState } from '@/types/game';
 import { Button } from '@/components/ui/button';
 import { Crown, RotateCcw, Trophy, Skull } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
+import { getGameOverTranslation } from '@/i18n/gameOverTranslations';
 
 interface GameOverProps {
   gameState: GameState;
@@ -11,6 +12,7 @@ interface GameOverProps {
 
 export const GameOver = ({ gameState, onRestart }: GameOverProps) => {
   const { t, isRTL, currentLanguage } = useLanguage();
+  const gt = getGameOverTranslation(currentLanguage);
   const isVictory = !gameState.gameOverReason;
   const score = Math.round(
     (gameState.economy + gameState.military + gameState.popularity + gameState.diplomacy) / 4
@@ -45,28 +47,20 @@ export const GameOver = ({ gameState, onRestart }: GameOverProps) => {
         </motion.div>
 
         <h2 className="text-2xl font-bold text-foreground mb-2">
-          {isVictory 
-            ? (currentLanguage === 'ar' ? 'تهانينا!' : 'Congratulations!') 
-            : t('gameOver')}
+          {isVictory ? gt.congratulations : t('gameOver')}
         </h2>
 
         <p className="text-muted-foreground mb-6">
-          {gameState.gameOverReason || (currentLanguage === 'ar' 
-            ? `حكمت البلاد لمدة ${gameState.turnCount} دور بنجاح!`
-            : `You ruled for ${gameState.turnCount} turns successfully!`)}
+          {gameState.gameOverReason || gt.ruledSuccessfully(gameState.turnCount)}
         </p>
 
         {/* Score */}
         <div className="bg-secondary/50 rounded-xl p-4 mb-6">
-          <p className="text-sm text-muted-foreground mb-1">
-            {currentLanguage === 'ar' ? 'النتيجة النهائية' : 'Final Score'}
-          </p>
+          <p className="text-sm text-muted-foreground mb-1">{gt.finalScore}</p>
           <div className="flex items-center justify-center gap-2">
             <Crown className="w-6 h-6 text-primary" />
             <span className="text-3xl font-bold text-primary">{score}</span>
-            <span className="text-muted-foreground">
-              {currentLanguage === 'ar' ? 'نقطة' : 'pts'}
-            </span>
+            <span className="text-muted-foreground">{gt.points}</span>
           </div>
         </div>
 

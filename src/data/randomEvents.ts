@@ -509,6 +509,193 @@ export const randomEvents: RandomEvent[] = [
       },
     ],
   },
+  // New random events
+  {
+    id: 'nuclear_meltdown',
+    title: '☢️ تسرب نووي',
+    description: 'تسرب إشعاعي من محطة الطاقة النووية! المنطقة المحيطة في خطر شديد.',
+    category: 'social',
+    probability: 4,
+    minTurn: 8,
+    cooldown: 25,
+    severity: 'critical',
+    type: 'disaster',
+    choices: [
+      {
+        id: 'full_evacuation',
+        text: 'إجلاء شامل وإغلاق المحطة',
+        effects: { treasury: -50, economy: -20, popularity: 10 },
+        regionEffects: [
+          { regionId: 'east', effects: { economy: -25, loyalty: 15, unrest: -5 } },
+        ],
+      },
+      {
+        id: 'contain_leak',
+        text: 'محاولة احتواء التسرب',
+        effects: { treasury: -25, popularity: -10 },
+        regionEffects: [
+          { regionId: 'east', effects: { unrest: 30, loyalty: -20 } },
+        ],
+      },
+      {
+        id: 'cover_up_nuclear',
+        text: 'إخفاء الأمر عن الشعب',
+        effects: { popularity: -5, diplomacy: -25 },
+        regionEffects: [
+          { regionId: 'east', effects: { unrest: 20 } },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'assassination_attempt',
+    title: '🎯 محاولة اغتيال',
+    description: 'محاولة اغتيال فاشلة تستهدفك شخصياً! حراسك أحبطوا المحاولة.',
+    category: 'military',
+    probability: 3,
+    minTurn: 12,
+    cooldown: 30,
+    severity: 'critical',
+    type: 'political',
+    choices: [
+      {
+        id: 'martial_law',
+        text: 'إعلان الأحكام العرفية',
+        effects: { military: 20, popularity: -25, diplomacy: -20, treasury: -20 },
+        factionEffects: [
+          { factionId: 'military_faction', supportChange: 25 },
+          { factionId: 'intellectuals', supportChange: -25 },
+        ],
+      },
+      {
+        id: 'calm_investigation',
+        text: 'تحقيق هادئ ومحاكمة المتورطين',
+        effects: { popularity: 15, diplomacy: 10 },
+        factionEffects: [
+          { factionId: 'intellectuals', supportChange: 15 },
+        ],
+      },
+      {
+        id: 'forgive',
+        text: 'العفو والمصالحة الوطنية',
+        effects: { popularity: 20, military: -15, diplomacy: 15 },
+        factionEffects: [
+          { factionId: 'religious', supportChange: 20 },
+          { factionId: 'military_faction', supportChange: -20 },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'hyperinflation',
+    title: '💸 تضخم مفرط',
+    description: 'أسعار السلع تتضاعف يومياً! العملة المحلية تفقد قيمتها بسرعة مرعبة.',
+    category: 'economy',
+    probability: 5,
+    minTurn: 7,
+    cooldown: 20,
+    severity: 'critical',
+    type: 'economic',
+    choices: [
+      {
+        id: 'currency_reform',
+        text: 'إصلاح العملة وتغيير النظام النقدي',
+        effects: { economy: 10, treasury: -30, popularity: -10 },
+        factionEffects: [
+          { factionId: 'business', supportChange: -10 },
+        ],
+      },
+      {
+        id: 'price_controls',
+        text: 'تحديد أسعار السلع الأساسية',
+        effects: { popularity: 10, economy: -15, treasury: -15 },
+        factionEffects: [
+          { factionId: 'business', supportChange: -20 },
+          { factionId: 'labor', supportChange: 15 },
+        ],
+      },
+      {
+        id: 'imf_help',
+        text: 'طلب مساعدة صندوق النقد الدولي',
+        effects: { diplomacy: 5, economy: 5, popularity: -20, treasury: 20 },
+      },
+    ],
+  },
+  {
+    id: 'ethnic_tensions',
+    title: '⚡ توترات عرقية',
+    description: 'اشتباكات عنيفة بين مجموعات عرقية مختلفة تهدد استقرار البلاد!',
+    category: 'social',
+    probability: 6,
+    minTurn: 6,
+    cooldown: 18,
+    severity: 'high',
+    type: 'social',
+    choices: [
+      {
+        id: 'deploy_troops',
+        text: 'نشر الجيش لفرض النظام',
+        effects: { military: -5, popularity: -15, diplomacy: -10 },
+        factionEffects: [
+          { factionId: 'military_faction', supportChange: 10 },
+        ],
+        regionEffects: [
+          { regionId: 'north', effects: { unrest: 25, loyalty: -20 } },
+        ],
+      },
+      {
+        id: 'reconciliation',
+        text: 'مبادرة مصالحة وطنية',
+        effects: { popularity: 10, treasury: -20, diplomacy: 10 },
+        factionEffects: [
+          { factionId: 'religious', supportChange: 15 },
+        ],
+      },
+      {
+        id: 'autonomy_offer',
+        text: 'منح حكم ذاتي للمناطق المتضررة',
+        effects: { popularity: -5, diplomacy: 5 },
+        regionEffects: [
+          { regionId: 'north', effects: { loyalty: 20, unrest: -15 } },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'tech_revolution',
+    title: '🤖 ثورة تكنولوجية',
+    description: 'ابتكار تقني محلي يجذب اهتمام العالم! فرصة ذهبية للنمو.',
+    category: 'economy',
+    probability: 8,
+    minTurn: 5,
+    cooldown: 15,
+    severity: 'low',
+    type: 'economic',
+    choices: [
+      {
+        id: 'tech_investment',
+        text: 'استثمار حكومي ضخم في التكنولوجيا',
+        effects: { economy: 15, treasury: -35, diplomacy: 10 },
+        factionEffects: [
+          { factionId: 'intellectuals', supportChange: 25 },
+          { factionId: 'business', supportChange: 15 },
+        ],
+      },
+      {
+        id: 'private_sector',
+        text: 'دعم القطاع الخاص للاستثمار',
+        effects: { economy: 10, treasury: -10 },
+        factionEffects: [
+          { factionId: 'business', supportChange: 20 },
+        ],
+      },
+      {
+        id: 'sell_tech',
+        text: 'بيع التقنية لدولة أجنبية',
+        effects: { treasury: 40, diplomacy: -10, popularity: -15 },
+      },
+    ],
+  },
 ];
 
 export interface ActiveEventCooldown {

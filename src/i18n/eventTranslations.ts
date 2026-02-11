@@ -149,9 +149,34 @@ const arEvents: EventTranslations = {
       close_borders: 'إغلاق الحدود تماماً',
     },
   },
+  // New events
+  nuclear_meltdown: {
+    title: '☢️ تسرب نووي',
+    description: 'تسرب إشعاعي من محطة الطاقة النووية!',
+    choices: { full_evacuation: 'إجلاء شامل', contain_leak: 'احتواء التسرب', cover_up_nuclear: 'إخفاء الأمر' },
+  },
+  assassination_attempt: {
+    title: '🎯 محاولة اغتيال',
+    description: 'محاولة اغتيال فاشلة تستهدفك شخصياً!',
+    choices: { martial_law: 'إعلان الأحكام العرفية', calm_investigation: 'تحقيق هادئ', forgive: 'العفو والمصالحة' },
+  },
+  hyperinflation: {
+    title: '💸 تضخم مفرط',
+    description: 'أسعار السلع تتضاعف يومياً! العملة تفقد قيمتها.',
+    choices: { currency_reform: 'إصلاح العملة', price_controls: 'تحديد الأسعار', imf_help: 'طلب مساعدة صندوق النقد' },
+  },
+  ethnic_tensions: {
+    title: '⚡ توترات عرقية',
+    description: 'اشتباكات عنيفة بين مجموعات عرقية مختلفة!',
+    choices: { deploy_troops: 'نشر الجيش', reconciliation: 'مصالحة وطنية', autonomy_offer: 'منح حكم ذاتي' },
+  },
+  tech_revolution: {
+    title: '🤖 ثورة تكنولوجية',
+    description: 'ابتكار تقني محلي يجذب اهتمام العالم!',
+    choices: { tech_investment: 'استثمار حكومي', private_sector: 'دعم القطاع الخاص', sell_tech: 'بيع التقنية' },
+  },
 };
 
-// English translations
 const enEvents: EventTranslations = {
   earthquake: {
     title: '🌍 Devastating Earthquake',
@@ -278,9 +303,34 @@ const enEvents: EventTranslations = {
       close_borders: 'Close borders completely',
     },
   },
+  // New events
+  nuclear_meltdown: {
+    title: '☢️ Nuclear Meltdown',
+    description: 'Radiation leak from the nuclear power plant! Surrounding area in severe danger.',
+    choices: { full_evacuation: 'Full evacuation and shutdown', contain_leak: 'Attempt to contain the leak', cover_up_nuclear: 'Cover it up from the public' },
+  },
+  assassination_attempt: {
+    title: '🎯 Assassination Attempt',
+    description: 'A failed assassination attempt targets you personally! Your guards thwarted it.',
+    choices: { martial_law: 'Declare martial law', calm_investigation: 'Calm investigation and trial', forgive: 'Pardon and national reconciliation' },
+  },
+  hyperinflation: {
+    title: '💸 Hyperinflation',
+    description: 'Prices doubling daily! The local currency is losing value at a terrifying rate.',
+    choices: { currency_reform: 'Currency reform', price_controls: 'Price controls on essentials', imf_help: 'Request IMF assistance' },
+  },
+  ethnic_tensions: {
+    title: '⚡ Ethnic Tensions',
+    description: 'Violent clashes between different ethnic groups threaten national stability!',
+    choices: { deploy_troops: 'Deploy army to restore order', reconciliation: 'National reconciliation initiative', autonomy_offer: 'Offer regional autonomy' },
+  },
+  tech_revolution: {
+    title: '🤖 Tech Revolution',
+    description: 'A local tech innovation attracts global attention! A golden opportunity for growth.',
+    choices: { tech_investment: 'Massive government tech investment', private_sector: 'Support private sector investment', sell_tech: 'Sell the technology abroad' },
+  },
 };
 
-// Spanish translations
 const esEvents: EventTranslations = {
   earthquake: {
     title: '🌍 Terremoto Devastador',
