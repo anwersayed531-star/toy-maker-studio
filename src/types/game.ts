@@ -47,9 +47,12 @@ export interface FollowUpEvent {
   decision: Decision;
 }
 
+export type DifficultyLevel = 'easy' | 'medium' | 'hard';
+
 export interface GameState {
   countryName: string;
   presidentName: string;
+  difficulty: DifficultyLevel;
   year: number;
   month: number;
   
@@ -160,6 +163,7 @@ const initialVictoryConditions: VictoryCondition[] = [
 export const initialGameState: GameState = {
   countryName: 'الجمهورية',
   presidentName: 'الرئيس',
+  difficulty: 'medium',
   year: 2024,
   month: 1,
   economy: 45,

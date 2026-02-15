@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { GameState, Choice, Decision, FollowUpEvent, initialGameState } from '@/types/game';
+import { GameState, Choice, Decision, FollowUpEvent, DifficultyLevel, initialGameState } from '@/types/game';
 import { getRandomDecision, decisions } from '@/data/decisions';
 import { getRandomEvent, RandomEvent, ActiveEventCooldown } from '@/data/randomEvents';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
@@ -80,16 +80,16 @@ export const useGameLogic = () => {
       gameOverReason = t.revolution;
     } else if (state.diplomacy <= 0) {
       gameOverReason = t.internationalIsolation;
-    } else if (state.treasury <= -30) {
+    } else if (state.treasury <= (state.difficulty === 'easy' ? -50 : state.difficulty === 'hard' ? -15 : -30)) {
       gameOverReason = t.totalBankruptcy;
     }
 
     const militaryFaction = state.factions.find(f => f.id === 'military_faction');
-    if (militaryFaction && militaryFaction.support <= 15) {
+    if (militaryFaction && militaryFaction.support <= (state.difficulty === 'easy' ? 10 : state.difficulty === 'hard' ? 25 : 15)) {
       gameOverReason = t.militaryCoup;
     }
 
-    const rebelliousRegion = state.regions.find(r => r.unrest >= 85);
+    const rebelliousRegion = state.regions.find(r => r.unrest >= (state.difficulty === 'easy' ? 95 : state.difficulty === 'hard' ? 75 : 85));
     if (rebelliousRegion) {
       const regionName = getRegionName(rebelliousRegion.id, currentLanguage);
       gameOverReason = t.regionRebellion(regionName);
@@ -151,6 +151,29 @@ export const useGameLogic = () => {
     return { state: { ...state, eventCooldowns: updatedCooldowns }, randomEvent: null };
   }, []);
 
+  const getDifficultyModifiers = useCallback((diff: DifficultyLevel) => {
+    switch (diff) {
+      case 'easy':
+        return {
+          regionUnrestGain: 4, regionLoyaltyLoss: -2, loyaltyThreshold: 40,
+          unrestThreshold: 50,
+          decay: { economyHigh: -1, economyLow: -1, popularityHigh: -1, popularityLow: -1, militaryHigh: 0, militaryLow: -1, diplomacyHigh: 0, diplomacyLow: -1, treasury: -1 },
+        };
+      case 'hard':
+        return {
+          regionUnrestGain: 12, regionLoyaltyLoss: -8, loyaltyThreshold: 55,
+          unrestThreshold: 35,
+          decay: { economyHigh: -3, economyLow: -5, popularityHigh: -4, popularityLow: -2, militaryHigh: -2, militaryLow: -3, diplomacyHigh: -2, diplomacyLow: -3, treasury: -5 },
+        };
+      default: // medium
+        return {
+          regionUnrestGain: 8, regionLoyaltyLoss: -5, loyaltyThreshold: 50,
+          unrestThreshold: 40,
+          decay: { economyHigh: -2, economyLow: -3, popularityHigh: -3, popularityLow: -1, militaryHigh: -1, militaryLow: -2, diplomacyHigh: -1, diplomacyLow: -2, treasury: -3 },
+        };
+    }
+  }, []);
+
   const advanceTime = useCallback((state: GameState): GameState => {
     let newMonth = state.month + 1;
     let newYear = state.year;
@@ -160,20 +183,20 @@ export const useGameLogic = () => {
       newYear += 1;
     }
 
-    // Harder: stats decay more aggressively
+    const mod = getDifficultyModifiers(state.difficulty);
+
     const updatedRegions = state.regions.map(region => ({
       ...region,
-      unrest: Math.max(0, Math.min(100, region.unrest + (region.loyalty < 50 ? 8 : -1))),
-      loyalty: Math.max(0, Math.min(100, region.loyalty + (region.unrest > 40 ? -5 : 1))),
+      unrest: Math.max(0, Math.min(100, region.unrest + (region.loyalty < mod.loyaltyThreshold ? mod.regionUnrestGain : -1))),
+      loyalty: Math.max(0, Math.min(100, region.loyalty + (region.unrest > mod.unrestThreshold ? mod.regionLoyaltyLoss : 1))),
     }));
 
-    // Natural stat decay each turn (makes the game harder)
     const decay = {
-      economy: state.economy > 60 ? -2 : (state.economy < 30 ? -3 : -1),
-      popularity: state.popularity > 60 ? -3 : -1,
-      military: state.military > 60 ? -1 : -2,
-      diplomacy: state.diplomacy > 60 ? -1 : -2,
-      treasury: -3,
+      economy: state.economy > 60 ? mod.decay.economyHigh : (state.economy < 30 ? mod.decay.economyLow : -1),
+      popularity: state.popularity > 60 ? mod.decay.popularityHigh : mod.decay.popularityLow,
+      military: state.military > 60 ? mod.decay.militaryHigh : mod.decay.militaryLow,
+      diplomacy: state.diplomacy > 60 ? mod.decay.diplomacyHigh : mod.decay.diplomacyLow,
+      treasury: mod.decay.treasury,
     };
 
     return {
@@ -188,7 +211,7 @@ export const useGameLogic = () => {
       diplomacy: Math.max(0, Math.min(100, state.diplomacy + decay.diplomacy)),
       treasury: state.treasury + decay.treasury,
     };
-  }, []);
+  }, [getDifficultyModifiers]);
 
   const selectRegion = useCallback((regionId: string) => {
     setGameState(prev => ({
@@ -224,11 +247,18 @@ export const useGameLogic = () => {
     }
   }, [loadGame, playSound, cancelReminder]);
 
-  const startGame = useCallback((presidentName: string, countryName: string) => {
+  const startGame = useCallback((presidentName: string, countryName: string, difficulty: DifficultyLevel = 'medium') => {
+    const diffStats: Record<DifficultyLevel, Partial<GameState>> = {
+      easy: { economy: 60, military: 60, popularity: 65, diplomacy: 60, treasury: 120 },
+      medium: { economy: 45, military: 45, popularity: 50, diplomacy: 45, treasury: 80 },
+      hard: { economy: 30, military: 30, popularity: 35, diplomacy: 30, treasury: 50 },
+    };
     const newState: GameState = {
       ...initialGameState,
+      ...diffStats[difficulty],
       presidentName,
       countryName,
+      difficulty,
     };
     setGameState(newState);
     setUsedDecisions([]);
