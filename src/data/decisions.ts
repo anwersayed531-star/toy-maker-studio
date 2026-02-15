@@ -803,6 +803,345 @@ export const decisions: Decision[] = [
       },
     ],
   },
+  // === New Decisions - More Content ===
+  {
+    id: 'water_privatization',
+    title: 'خصخصة المياه',
+    description: 'شركات أجنبية تعرض شراء حقوق توزيع المياه. الأرباح مغرية لكن الشعب قلق.',
+    category: 'economy',
+    choices: [
+      {
+        id: 'full_privatize',
+        text: 'بيع حقوق المياه بالكامل',
+        effects: { treasury: 50, popularity: -30, economy: 10 },
+        factionEffects: [
+          { factionId: 'business', supportChange: 25 },
+          { factionId: 'labor', supportChange: -25 },
+        ],
+      },
+      {
+        id: 'partial_privatize',
+        text: 'شراكة بين القطاعين العام والخاص',
+        effects: { treasury: 20, popularity: -5, economy: 5 },
+      },
+      {
+        id: 'keep_public',
+        text: 'رفض الخصخصة والحفاظ على الملكية العامة',
+        effects: { popularity: 15, treasury: -10 },
+        factionEffects: [
+          { factionId: 'labor', supportChange: 15 },
+          { factionId: 'business', supportChange: -10 },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'national_airline',
+    title: 'شركة الطيران الوطنية',
+    description: 'شركة الطيران الوطنية تعاني من خسائر فادحة وتحتاج لقرار مصيري.',
+    category: 'economy',
+    choices: [
+      {
+        id: 'bailout_airline',
+        text: 'ضخ أموال حكومية لإنقاذها',
+        effects: { treasury: -40, economy: 5, popularity: 5, diplomacy: 5 },
+      },
+      {
+        id: 'sell_airline',
+        text: 'بيعها لمستثمر أجنبي',
+        effects: { treasury: 30, popularity: -15, diplomacy: 10 },
+        factionEffects: [
+          { factionId: 'business', supportChange: 10 },
+          { factionId: 'labor', supportChange: -20 },
+        ],
+      },
+      {
+        id: 'shut_down',
+        text: 'إغلاقها نهائياً',
+        effects: { treasury: 10, popularity: -20, diplomacy: -10 },
+        factionEffects: [
+          { factionId: 'labor', supportChange: -15 },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'university_protests',
+    title: 'احتجاجات الجامعات',
+    description: 'طلاب الجامعات ينظمون اعتصامات ضخمة مطالبين بإصلاح التعليم العالي وتخفيض الرسوم.',
+    category: 'social',
+    choices: [
+      {
+        id: 'free_education',
+        text: 'إعلان مجانية التعليم الجامعي',
+        effects: { popularity: 25, treasury: -35, economy: -5 },
+        factionEffects: [
+          { factionId: 'intellectuals', supportChange: 30 },
+          { factionId: 'labor', supportChange: 10 },
+        ],
+      },
+      {
+        id: 'scholarship_program',
+        text: 'برنامج منح دراسية للمتفوقين',
+        effects: { popularity: 10, treasury: -15 },
+        factionEffects: [
+          { factionId: 'intellectuals', supportChange: 10 },
+        ],
+      },
+      {
+        id: 'disperse_students',
+        text: 'فض الاعتصامات وتهديد الطلاب بالفصل',
+        effects: { popularity: -20, military: 5 },
+        factionEffects: [
+          { factionId: 'intellectuals', supportChange: -30 },
+          { factionId: 'military_faction', supportChange: 5 },
+        ],
+        regionEffects: [
+          { regionId: 'capital', effects: { unrest: 20, loyalty: -15 } },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'arms_deal',
+    title: 'صفقة أسلحة',
+    description: 'عرض لشراء أسلحة متطورة من قوة عظمى. الصفقة ستعزز الجيش لكنها مكلفة.',
+    category: 'military',
+    choices: [
+      {
+        id: 'buy_weapons',
+        text: 'شراء الأسلحة بالكامل',
+        effects: { military: 25, treasury: -50, diplomacy: -10 },
+        factionEffects: [
+          { factionId: 'military_faction', supportChange: 30 },
+        ],
+      },
+      {
+        id: 'partial_deal',
+        text: 'شراء كمية محدودة مع اتفاقية تصنيع محلي',
+        effects: { military: 15, treasury: -25, economy: 5 },
+        factionEffects: [
+          { factionId: 'military_faction', supportChange: 15 },
+          { factionId: 'intellectuals', supportChange: 5 },
+        ],
+      },
+      {
+        id: 'reject_deal',
+        text: 'رفض الصفقة والاعتماد على التصنيع المحلي',
+        effects: { military: -5, popularity: 10, treasury: 5 },
+        factionEffects: [
+          { factionId: 'military_faction', supportChange: -10 },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'corruption_in_army',
+    title: 'فساد في الجيش',
+    description: 'تقارير سرية تكشف عن فساد مالي واسع في المؤسسة العسكرية واختلاس ميزانيات الدفاع.',
+    category: 'military',
+    choices: [
+      {
+        id: 'public_trial',
+        text: 'محاكمة علنية للضباط الفاسدين',
+        effects: { popularity: 20, military: -15, diplomacy: 5 },
+        factionEffects: [
+          { factionId: 'military_faction', supportChange: -25 },
+          { factionId: 'intellectuals', supportChange: 20 },
+        ],
+      },
+      {
+        id: 'internal_reform',
+        text: 'إصلاحات داخلية هادئة',
+        effects: { military: 5, popularity: -5 },
+        factionEffects: [
+          { factionId: 'military_faction', supportChange: -5 },
+        ],
+      },
+      {
+        id: 'ignore_corruption',
+        text: 'غض الطرف للحفاظ على ولاء الجيش',
+        effects: { popularity: -15, military: 10 },
+        factionEffects: [
+          { factionId: 'military_faction', supportChange: 15 },
+          { factionId: 'intellectuals', supportChange: -15 },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'religious_extremism',
+    title: 'تطرف ديني',
+    description: 'جماعات متطرفة تنتشر في المدن وتستقطب الشباب. الأجهزة الأمنية تحذر من خطر متصاعد.',
+    category: 'social',
+    choices: [
+      {
+        id: 'security_approach',
+        text: 'حملة أمنية لملاحقة المتطرفين',
+        effects: { military: 10, popularity: -10, diplomacy: -5 },
+        factionEffects: [
+          { factionId: 'military_faction', supportChange: 15 },
+          { factionId: 'religious', supportChange: -20 },
+        ],
+      },
+      {
+        id: 'dialogue_approach',
+        text: 'حوار وبرامج إعادة تأهيل',
+        effects: { popularity: 10, treasury: -20 },
+        factionEffects: [
+          { factionId: 'religious', supportChange: 10 },
+          { factionId: 'intellectuals', supportChange: 15 },
+        ],
+      },
+      {
+        id: 'education_approach',
+        text: 'إصلاح المناهج التعليمية ودعم الفكر المعتدل',
+        effects: { treasury: -15, diplomacy: 10, popularity: 5 },
+        factionEffects: [
+          { factionId: 'intellectuals', supportChange: 20 },
+          { factionId: 'religious', supportChange: -5 },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'mineral_discovery',
+    title: 'اكتشاف معادن نادرة',
+    description: 'علماء جيولوجيا يكتشفون احتياطيات ضخمة من معادن نادرة في منطقة الغرب!',
+    category: 'economy',
+    regionId: 'west',
+    choices: [
+      {
+        id: 'state_mining',
+        text: 'تأميم المناجم واستثمار حكومي',
+        effects: { economy: 15, treasury: -30, popularity: 10 },
+        regionEffects: [
+          { regionId: 'west', effects: { economy: 25, development: 20, loyalty: 15 } },
+        ],
+        factionEffects: [
+          { factionId: 'labor', supportChange: 15 },
+        ],
+      },
+      {
+        id: 'foreign_partnership',
+        text: 'شراكة مع شركات أجنبية',
+        effects: { economy: 10, treasury: 20, diplomacy: 10 },
+        regionEffects: [
+          { regionId: 'west', effects: { economy: 15, development: 10 } },
+        ],
+        factionEffects: [
+          { factionId: 'business', supportChange: 20 },
+        ],
+      },
+      {
+        id: 'auction_rights',
+        text: 'بيع حقوق التنقيب في مزاد علني',
+        effects: { treasury: 40, popularity: -10 },
+        regionEffects: [
+          { regionId: 'west', effects: { economy: 10, loyalty: -10 } },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'east_drought',
+    title: 'جفاف في الشرق',
+    description: 'موسم جفاف قاسي يضرب منطقة الشرق. المزارعون يتضورون جوعاً والمحاصيل تحتضر.',
+    category: 'regional',
+    regionId: 'east',
+    choices: [
+      {
+        id: 'emergency_aid',
+        text: 'مساعدات طوارئ ومشاريع ري عاجلة',
+        effects: { treasury: -30, popularity: 15 },
+        regionEffects: [
+          { regionId: 'east', effects: { loyalty: 20, unrest: -15, economy: 5 } },
+        ],
+      },
+      {
+        id: 'relocate_farmers',
+        text: 'نقل المزارعين لمناطق أخرى',
+        effects: { treasury: -15, popularity: -5 },
+        regionEffects: [
+          { regionId: 'east', effects: { loyalty: -10, unrest: 10 } },
+          { regionId: 'north', effects: { unrest: 5 } },
+        ],
+      },
+      {
+        id: 'minimal_aid',
+        text: 'مساعدات رمزية فقط',
+        effects: { popularity: -10 },
+        regionEffects: [
+          { regionId: 'east', effects: { loyalty: -25, unrest: 30 } },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'capital_metro',
+    title: 'مترو العاصمة',
+    description: 'مشروع مترو أنفاق ضخم للعاصمة. سيحل أزمة المرور لكنه مكلف جداً.',
+    category: 'economy',
+    regionId: 'capital',
+    choices: [
+      {
+        id: 'full_metro',
+        text: 'بناء شبكة مترو كاملة',
+        effects: { treasury: -60, economy: 15, popularity: 20 },
+        regionEffects: [
+          { regionId: 'capital', effects: { development: 25, economy: 20, loyalty: 15 } },
+        ],
+        factionEffects: [
+          { factionId: 'business', supportChange: 10 },
+        ],
+      },
+      {
+        id: 'bus_system',
+        text: 'نظام حافلات سريعة بدلاً من المترو',
+        effects: { treasury: -20, economy: 5, popularity: 10 },
+        regionEffects: [
+          { regionId: 'capital', effects: { development: 10, economy: 5 } },
+        ],
+      },
+      {
+        id: 'cancel_project',
+        text: 'تأجيل المشروع لعدم توفر الميزانية',
+        effects: { popularity: -10 },
+        regionEffects: [
+          { regionId: 'capital', effects: { loyalty: -5, unrest: 10 } },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'national_sport',
+    title: 'استضافة بطولة رياضية',
+    description: 'فرصة لاستضافة بطولة رياضية دولية. ستعزز سمعة الدولة لكنها تحتاج استثمارات ضخمة.',
+    category: 'diplomacy',
+    choices: [
+      {
+        id: 'host_event',
+        text: 'استضافة البطولة ببذخ',
+        effects: { diplomacy: 20, popularity: 20, treasury: -55, economy: 10 },
+        factionEffects: [
+          { factionId: 'business', supportChange: 15 },
+        ],
+        regionEffects: [
+          { regionId: 'capital', effects: { development: 15, economy: 10 } },
+        ],
+      },
+      {
+        id: 'modest_hosting',
+        text: 'استضافة متواضعة مع تقليل التكاليف',
+        effects: { diplomacy: 10, popularity: 5, treasury: -20 },
+      },
+      {
+        id: 'decline_hosting',
+        text: 'الاعتذار عن الاستضافة',
+        effects: { diplomacy: -10, popularity: -5, treasury: 5 },
+      },
+    ],
+  },
 ];
 
 export const getRandomDecision = (usedDecisions: string[]): Decision | null => {

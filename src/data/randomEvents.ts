@@ -696,6 +696,184 @@ export const randomEvents: RandomEvent[] = [
       },
     ],
   },
+  // === New Random Events ===
+  {
+    id: 'volcanic_eruption',
+    title: '🌋 ثوران بركاني',
+    description: 'بركان خامد يستيقظ فجأة! الرماد البركاني يغطي مناطق واسعة والسكان في خطر.',
+    category: 'social',
+    probability: 4,
+    minTurn: 7,
+    cooldown: 25,
+    severity: 'critical',
+    type: 'disaster',
+    choices: [
+      {
+        id: 'mass_evacuation',
+        text: 'إجلاء شامل للمناطق المهددة',
+        effects: { treasury: -45, popularity: 15, military: -5 },
+        regionEffects: [
+          { regionId: 'west', effects: { economy: -20, loyalty: 20, unrest: -10 } },
+        ],
+      },
+      {
+        id: 'partial_evacuation',
+        text: 'إجلاء المناطق القريبة فقط',
+        effects: { treasury: -15, popularity: -5 },
+        regionEffects: [
+          { regionId: 'west', effects: { economy: -10, unrest: 15 } },
+        ],
+      },
+      {
+        id: 'monitor_situation',
+        text: 'مراقبة الوضع وعدم التصرف',
+        effects: { popularity: -20 },
+        regionEffects: [
+          { regionId: 'west', effects: { loyalty: -25, unrest: 30 } },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'foreign_spy',
+    title: '🕵️ شبكة تجسس أجنبية',
+    description: 'المخابرات تكتشف شبكة تجسس أجنبية تعمل في قلب الحكومة! معلومات حساسة تسربت.',
+    category: 'military',
+    probability: 4,
+    minTurn: 10,
+    cooldown: 20,
+    severity: 'high',
+    type: 'political',
+    choices: [
+      {
+        id: 'expose_publicly',
+        text: 'فضح الشبكة علنياً وطرد دبلوماسيين',
+        effects: { diplomacy: -25, popularity: 15, military: 10 },
+        factionEffects: [
+          { factionId: 'military_faction', supportChange: 20 },
+        ],
+      },
+      {
+        id: 'quiet_arrest',
+        text: 'اعتقال هادئ وتبادل جواسيس',
+        effects: { diplomacy: 5, military: 5 },
+      },
+      {
+        id: 'use_as_double_agents',
+        text: 'تحويلهم لعملاء مزدوجين',
+        effects: { military: 15, diplomacy: -5 },
+        factionEffects: [
+          { factionId: 'military_faction', supportChange: 10 },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'bank_run',
+    title: '🏦 هروب من البنوك',
+    description: 'شائعات عن إفلاس البنوك تدفع المواطنين لسحب أموالهم بشكل جماعي! النظام المصرفي على وشك الانهيار.',
+    category: 'economy',
+    probability: 5,
+    minTurn: 6,
+    cooldown: 18,
+    severity: 'critical',
+    type: 'economic',
+    choices: [
+      {
+        id: 'guarantee_deposits',
+        text: 'ضمان حكومي لجميع الودائع',
+        effects: { treasury: -40, economy: 10, popularity: 10 },
+        factionEffects: [
+          { factionId: 'business', supportChange: 15 },
+        ],
+      },
+      {
+        id: 'limit_withdrawals',
+        text: 'تحديد سقف للسحب اليومي',
+        effects: { economy: -10, popularity: -20, treasury: -5 },
+        factionEffects: [
+          { factionId: 'labor', supportChange: -15 },
+        ],
+      },
+      {
+        id: 'close_banks',
+        text: 'إغلاق البنوك مؤقتاً لمنع الانهيار',
+        effects: { economy: -20, popularity: -25, treasury: 5 },
+        regionEffects: [
+          { regionId: 'capital', effects: { unrest: 25 } },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'pandemic_wave2',
+    title: '🦠 موجة وبائية ثانية',
+    description: 'موجة جديدة أشد فتكاً من الوباء تجتاح البلاد! المستشفيات ممتلئة بالكامل.',
+    category: 'social',
+    probability: 5,
+    minTurn: 8,
+    cooldown: 20,
+    severity: 'critical',
+    type: 'epidemic',
+    choices: [
+      {
+        id: 'full_lockdown2',
+        text: 'إغلاق تام وحظر تجوال',
+        effects: { economy: -30, popularity: -20, treasury: -25 },
+        regionEffects: [
+          { regionId: 'capital', effects: { economy: -25, unrest: 35 } },
+        ],
+      },
+      {
+        id: 'vaccination_drive',
+        text: 'حملة تطعيم مكثفة',
+        effects: { treasury: -35, popularity: 15, diplomacy: 5 },
+      },
+      {
+        id: 'ignore_wave',
+        text: 'تجاهل الموجة والاعتماد على المناعة',
+        effects: { popularity: -30, economy: 5, diplomacy: -15 },
+      },
+    ],
+  },
+  {
+    id: 'gold_discovery',
+    title: '💎 اكتشاف منجم ذهب',
+    description: 'اكتشاف احتياطي ذهب ضخم! فرصة ذهبية لإنعاش الاقتصاد.',
+    category: 'economy',
+    probability: 6,
+    minTurn: 4,
+    cooldown: 25,
+    severity: 'low',
+    type: 'economic',
+    choices: [
+      {
+        id: 'nationalize_mine',
+        text: 'تأميم المنجم لصالح الدولة',
+        effects: { treasury: 40, economy: 15, popularity: 10 },
+        factionEffects: [
+          { factionId: 'labor', supportChange: 15 },
+          { factionId: 'business', supportChange: -10 },
+        ],
+        regionEffects: [
+          { regionId: 'south', effects: { economy: 20, development: 15 } },
+        ],
+      },
+      {
+        id: 'private_contract',
+        text: 'منح عقد تنقيب لشركة خاصة',
+        effects: { treasury: 25, economy: 10 },
+        factionEffects: [
+          { factionId: 'business', supportChange: 20 },
+        ],
+      },
+      {
+        id: 'international_bidding',
+        text: 'مناقصة دولية لأعلى سعر',
+        effects: { treasury: 50, diplomacy: 5, popularity: -10 },
+      },
+    ],
+  },
 ];
 
 export interface ActiveEventCooldown {

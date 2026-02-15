@@ -15,6 +15,7 @@ import { GameHeader } from '@/components/game/GameHeader';
 import { RandomEventNotification } from '@/components/game/RandomEventNotification';
 import { Map, Users, Trophy, Building, Crown } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DifficultyLevel } from '@/types/game';
 import { useToast } from '@/hooks/use-toast';
 import { useSettings } from '@/hooks/useSettings';
 import { useLanguage } from '@/hooks/useLanguage';

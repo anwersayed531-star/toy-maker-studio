@@ -114,6 +114,15 @@ export interface Translation {
   // Decisions
   accept: string;
   reject: string;
+  
+  // Difficulty
+  difficulty: string;
+  easy: string;
+  medium2: string;
+  hard: string;
+  easyDesc: string;
+  mediumDesc: string;
+  hardDesc: string;
 }
 
 // Default translation (Arabic)
@@ -199,6 +208,13 @@ const defaultTranslation: Translation = {
   highestStats: 'أعلى الإحصائيات',
   accept: 'قبول',
   reject: 'رفض',
+  difficulty: 'مستوى الصعوبة',
+  easy: 'سهل',
+  medium2: 'متوسط',
+  hard: 'صعب',
+  easyDesc: 'للمبتدئين - موارد أكثر وتدهور أبطأ',
+  mediumDesc: 'تحدي متوازن - التجربة الكلاسيكية',
+  hardDesc: 'للمحترفين - موارد قليلة وتدهور سريع',
 };
 
 // English translation
@@ -284,6 +300,13 @@ const enTranslation: Translation = {
   highestStats: 'Highest Stats',
   accept: 'Accept',
   reject: 'Reject',
+  difficulty: 'Difficulty',
+  easy: 'Easy',
+  medium2: 'Medium',
+  hard: 'Hard',
+  easyDesc: 'For beginners - more resources and slower decay',
+  mediumDesc: 'Balanced challenge - the classic experience',
+  hardDesc: 'For experts - fewer resources and faster decay',
 };
 
 // Helper to create translations with fallback to English

@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Crown, Play, Landmark, RotateCcw, Clock } from 'lucide-react';
+import { Crown, Play, Landmark, RotateCcw, Clock, Shield, Swords, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useLanguage } from '@/hooks/useLanguage';
 import { LanguageSelector } from './LanguageSelector';
+import { DifficultyLevel } from '@/types/game';
 import gameLogo from '@/assets/game-logo.png';
 
 interface SaveInfo {
@@ -14,7 +15,7 @@ interface SaveInfo {
 }
 
 interface StartScreenProps {
-  onStart: (presidentName: string, countryName: string) => void;
+  onStart: (presidentName: string, countryName: string, difficulty: DifficultyLevel) => void;
   onLoadGame?: () => void;
   hasSavedGame?: boolean;
   saveInfo?: SaveInfo | null;
@@ -23,6 +24,7 @@ interface StartScreenProps {
 export const StartScreen = ({ onStart, onLoadGame, hasSavedGame, saveInfo }: StartScreenProps) => {
   const [presidentName, setPresidentName] = useState('');
   const [countryName, setCountryName] = useState('');
+  const [difficulty, setDifficulty] = useState<DifficultyLevel>('medium');
   const { t, isRTL, currentLanguage } = useLanguage();
 
   const handleStart = () => {
@@ -30,7 +32,8 @@ export const StartScreen = ({ onStart, onLoadGame, hasSavedGame, saveInfo }: Sta
     const defaultCountry = currentLanguage === 'ar' ? 'الجمهورية' : 'Republic';
     onStart(
       presidentName.trim() || defaultPresident,
-      countryName.trim() || defaultCountry
+      countryName.trim() || defaultCountry,
+      difficulty
     );
   };
 
@@ -47,6 +50,24 @@ export const StartScreen = ({ onStart, onLoadGame, hasSavedGame, saveInfo }: Sta
     } catch {
       return '';
     }
+  };
+
+  const difficultyOptions: { value: DifficultyLevel; icon: React.ReactNode; color: string }[] = [
+    { value: 'easy', icon: <Shield className="w-5 h-5" />, color: 'text-green-500 border-green-500/50 bg-green-500/10' },
+    { value: 'medium', icon: <Swords className="w-5 h-5" />, color: 'text-yellow-500 border-yellow-500/50 bg-yellow-500/10' },
+    { value: 'hard', icon: <Zap className="w-5 h-5" />, color: 'text-red-500 border-red-500/50 bg-red-500/10' },
+  ];
+
+  const getDifficultyLabel = (d: DifficultyLevel) => {
+    if (d === 'easy') return t('easy');
+    if (d === 'medium') return t('medium2');
+    return t('hard');
+  };
+
+  const getDifficultyDesc = (d: DifficultyLevel) => {
+    if (d === 'easy') return t('easyDesc');
+    if (d === 'medium') return t('mediumDesc');
+    return t('hardDesc');
   };
 
   return (
@@ -147,6 +168,34 @@ export const StartScreen = ({ onStart, onLoadGame, hasSavedGame, saveInfo }: Sta
               className={isRTL ? 'text-right' : 'text-left'}
               dir={isRTL ? 'rtl' : 'ltr'}
             />
+          </div>
+
+          {/* Difficulty Selector */}
+          <div className="space-y-3">
+            <label className="text-sm text-muted-foreground flex items-center gap-2">
+              <Swords className="w-4 h-4 text-primary" />
+              {t('difficulty')}
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {difficultyOptions.map((opt) => (
+                <motion.button
+                  key={opt.value}
+                  onClick={() => setDifficulty(opt.value)}
+                  whileTap={{ scale: 0.95 }}
+                  className={`p-3 rounded-lg border-2 transition-all text-center ${
+                    difficulty === opt.value
+                      ? opt.color + ' ring-2 ring-offset-2 ring-offset-background'
+                      : 'border-border bg-muted/30 text-muted-foreground hover:border-muted-foreground/50'
+                  }`}
+                >
+                  <div className="flex flex-col items-center gap-1.5">
+                    {opt.icon}
+                    <span className="text-sm font-semibold">{getDifficultyLabel(opt.value)}</span>
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground text-center">{getDifficultyDesc(difficulty)}</p>
           </div>
 
           <Button
