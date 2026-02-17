@@ -155,21 +155,21 @@ export const useGameLogic = () => {
     switch (diff) {
       case 'easy':
         return {
-          regionUnrestGain: 4, regionLoyaltyLoss: -2, loyaltyThreshold: 40,
-          unrestThreshold: 50,
-          decay: { economyHigh: -1, economyLow: -1, popularityHigh: -1, popularityLow: -1, militaryHigh: 0, militaryLow: -1, diplomacyHigh: 0, diplomacyLow: -1, treasury: -1 },
+          regionUnrestGain: 5, regionLoyaltyLoss: -3, loyaltyThreshold: 42,
+          unrestThreshold: 48,
+          decay: { economyHigh: -2, economyLow: -2, popularityHigh: -2, popularityLow: -1, militaryHigh: -1, militaryLow: -1, diplomacyHigh: -1, diplomacyLow: -1, treasury: -2 },
         };
       case 'hard':
         return {
-          regionUnrestGain: 12, regionLoyaltyLoss: -8, loyaltyThreshold: 55,
-          unrestThreshold: 35,
-          decay: { economyHigh: -3, economyLow: -5, popularityHigh: -4, popularityLow: -2, militaryHigh: -2, militaryLow: -3, diplomacyHigh: -2, diplomacyLow: -3, treasury: -5 },
+          regionUnrestGain: 15, regionLoyaltyLoss: -10, loyaltyThreshold: 60,
+          unrestThreshold: 30,
+          decay: { economyHigh: -4, economyLow: -6, popularityHigh: -5, popularityLow: -3, militaryHigh: -3, militaryLow: -4, diplomacyHigh: -3, diplomacyLow: -4, treasury: -7 },
         };
       default: // medium
         return {
-          regionUnrestGain: 8, regionLoyaltyLoss: -5, loyaltyThreshold: 50,
-          unrestThreshold: 40,
-          decay: { economyHigh: -2, economyLow: -3, popularityHigh: -3, popularityLow: -1, militaryHigh: -1, militaryLow: -2, diplomacyHigh: -1, diplomacyLow: -2, treasury: -3 },
+          regionUnrestGain: 10, regionLoyaltyLoss: -6, loyaltyThreshold: 52,
+          unrestThreshold: 38,
+          decay: { economyHigh: -3, economyLow: -4, popularityHigh: -4, popularityLow: -2, militaryHigh: -2, militaryLow: -3, diplomacyHigh: -2, diplomacyLow: -3, treasury: -4 },
         };
     }
   }, []);
@@ -249,9 +249,9 @@ export const useGameLogic = () => {
 
   const startGame = useCallback((presidentName: string, countryName: string, difficulty: DifficultyLevel = 'medium') => {
     const diffStats: Record<DifficultyLevel, Partial<GameState>> = {
-      easy: { economy: 60, military: 60, popularity: 65, diplomacy: 60, treasury: 120 },
-      medium: { economy: 45, military: 45, popularity: 50, diplomacy: 45, treasury: 80 },
-      hard: { economy: 30, military: 30, popularity: 35, diplomacy: 30, treasury: 50 },
+      easy: { economy: 55, military: 55, popularity: 55, diplomacy: 55, treasury: 100 },
+      medium: { economy: 40, military: 40, popularity: 42, diplomacy: 40, treasury: 65 },
+      hard: { economy: 25, military: 25, popularity: 28, diplomacy: 25, treasury: 35 },
     };
     const newState: GameState = {
       ...initialGameState,
