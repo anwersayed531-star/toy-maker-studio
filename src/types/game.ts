@@ -1,11 +1,11 @@
 export interface Region {
   id: string;
   name: string;
-  population: number; // in millions
-  economy: number; // 0-100
-  loyalty: number; // 0-100
-  development: number; // 0-100
-  unrest: number; // 0-100
+  population: number;
+  economy: number;
+  loyalty: number;
+  development: number;
+  unrest: number;
   governor?: string;
   resources: ('oil' | 'agriculture' | 'industry' | 'tourism' | 'mining')[];
 }
@@ -14,8 +14,8 @@ export interface Advisor {
   id: string;
   name: string;
   role: 'economic' | 'military' | 'diplomatic' | 'internal';
-  loyalty: number; // 0-100
-  competence: number; // 0-100
+  loyalty: number;
+  competence: number;
   opinion?: string;
 }
 
@@ -23,8 +23,8 @@ export interface SupportFaction {
   id: string;
   name: string;
   type: 'military' | 'business' | 'religious' | 'labor' | 'intellectuals';
-  support: number; // 0-100
-  influence: number; // 0-100
+  support: number;
+  influence: number;
   demands?: string;
 }
 
@@ -40,14 +40,40 @@ export interface VictoryCondition {
 
 export interface FollowUpEvent {
   id: string;
-  triggeredBy: string; // decision id that triggered this
-  choiceId: string; // which choice triggered it
+  triggeredBy: string;
+  choiceId: string;
   turnsUntilTrigger: number;
   triggered: boolean;
   decision: Decision;
 }
 
 export type DifficultyLevel = 'easy' | 'medium' | 'hard';
+
+export type CharacterStatus = 'alive' | 'imprisoned' | 'exiled' | 'dead';
+
+export interface Character {
+  id: string;
+  name: string;
+  role: string;
+  loyalty: number; // 0-100
+  skill: number; // 0-100
+  status: CharacterStatus;
+  description: string;
+  portraitEmoji: string;
+}
+
+export interface StoryChapter {
+  id: string;
+  title: string;
+  description: string;
+  unlockCondition: {
+    type: 'turn' | 'stat' | 'event';
+    value: number;
+    stat?: string;
+  };
+  completed: boolean;
+  decisions?: string[]; // decision IDs linked to this chapter
+}
 
 export interface GameState {
   countryName: string;
@@ -63,8 +89,8 @@ export interface GameState {
   diplomacy: number;
   
   // Resources
-  treasury: number; // in billions
-  population: number; // in millions
+  treasury: number;
+  population: number;
   
   // Regions
   regions: Region[];
@@ -88,6 +114,17 @@ export interface GameState {
   eventCooldowns: { eventId: string; turnsRemaining: number }[];
   lastRandomEvent?: string;
   
+  // Story & Characters
+  characters: Character[];
+  storyChapters: StoryChapter[];
+  currentChapter: number;
+  
+  // Crisis animation
+  activeCrisis?: {
+    type: 'earthquake' | 'war' | 'coup' | 'epidemic' | 'economic' | 'fire';
+    severity: 'medium' | 'high' | 'critical';
+  };
+  
   // Game status
   gameOver: boolean;
   gameOverReason?: string;
@@ -99,7 +136,7 @@ export interface Decision {
   title: string;
   description: string;
   category: 'economy' | 'military' | 'diplomacy' | 'social' | 'regional';
-  regionId?: string; // for region-specific decisions
+  regionId?: string;
   choices: Choice[];
   followUpEvents?: {
     choiceId: string;
@@ -160,6 +197,27 @@ const initialVictoryConditions: VictoryCondition[] = [
   { id: 'popular_victory', name: 'الزعيم المحبوب', description: 'وصول الشعبية إلى 95+', type: 'popular', targetValue: 95, currentValue: 50, completed: false },
 ];
 
+const initialCharacters: Character[] = [
+  { id: 'vice_president', name: 'نائب الرئيس - عادل المنصور', role: 'نائب الرئيس', loyalty: 65, skill: 70, status: 'alive', description: 'سياسي محنك يطمح للرئاسة سراً', portraitEmoji: '🎩' },
+  { id: 'intelligence_chief', name: 'رئيس المخابرات - اللواء سالم', role: 'رئيس المخابرات', loyalty: 75, skill: 85, status: 'alive', description: 'يعرف أسرار الجميع ولا يثق بأحد', portraitEmoji: '🕶️' },
+  { id: 'opposition_leader', name: 'قائد المعارضة - كمال الدين', role: 'زعيم المعارضة', loyalty: 15, skill: 80, status: 'alive', description: 'خطيب مفوّه يحرك الشارع بكلماته', portraitEmoji: '📢' },
+  { id: 'tycoon', name: 'رجل الأعمال - حسن الثري', role: 'رجل أعمال', loyalty: 50, skill: 90, status: 'alive', description: 'يملك نصف اقتصاد البلاد ويريد النصف الآخر', portraitEmoji: '💰' },
+  { id: 'tribal_chief', name: 'الشيخ عبدالله - زعيم القبائل', role: 'زعيم قبلي', loyalty: 55, skill: 60, status: 'alive', description: 'يتحكم في الجنوب ويمسك بتوازن القبائل', portraitEmoji: '⚔️' },
+  { id: 'nuclear_scientist', name: 'د. ليلى العلمية', role: 'عالمة نووية', loyalty: 80, skill: 95, status: 'alive', description: 'عبقرية في الفيزياء النووية وحلم البرنامج النووي', portraitEmoji: '🔬' },
+  { id: 'journalist', name: 'الصحفي - يوسف الحقيقة', role: 'صحفي شهير', loyalty: 30, skill: 75, status: 'alive', description: 'يكشف الفساد ولا يخشى أحداً', portraitEmoji: '📰' },
+  { id: 'general', name: 'الجنرال - طارق الحديد', role: 'قائد الجيش', loyalty: 70, skill: 85, status: 'alive', description: 'بطل حرب سابق يحظى بولاء الجنود', portraitEmoji: '🎖️' },
+];
+
+const initialStoryChapters: StoryChapter[] = [
+  { id: 'ch1', title: 'الفصل الأول: بداية الحكم', description: 'وصلت للسلطة في ظروف غامضة. الجميع يراقبك والتحديات تتراكم. أثبت أنك تستحق هذا المنصب.', unlockCondition: { type: 'turn', value: 0 }, completed: false },
+  { id: 'ch2', title: 'الفصل الثاني: اختبار الولاء', description: 'بعد أشهر من الحكم، تظهر الخيانات. من يقف معك ومن يتآمر عليك؟ عليك أن تكتشف قبل فوات الأوان.', unlockCondition: { type: 'turn', value: 8 }, completed: false },
+  { id: 'ch3', title: 'الفصل الثالث: عاصفة الأزمات', description: 'أزمات متتالية تضرب البلاد. الاقتصاد يترنح والشعب غاضب. هل تستطيع إنقاذ الموقف؟', unlockCondition: { type: 'turn', value: 18 }, completed: false },
+  { id: 'ch4', title: 'الفصل الرابع: صراع القوى', description: 'الفصائل تتصارع والجيش يتحرك. نائب الرئيس يخطط والمعارضة تشتد. من سيسقط أولاً؟', unlockCondition: { type: 'turn', value: 30 }, completed: false },
+  { id: 'ch5', title: 'الفصل الخامس: لحظة الحقيقة', description: 'كل قراراتك السابقة تقودك لهذه اللحظة. هل ستُكتب كبطل أم كطاغية في التاريخ؟', unlockCondition: { type: 'turn', value: 45 }, completed: false },
+  { id: 'ch6', title: 'الفصل السادس: الحرب الكبرى', description: 'تهديد خارجي يلوح في الأفق. عليك توحيد البلاد أو مواجهة الدمار.', unlockCondition: { type: 'turn', value: 60 }, completed: false },
+  { id: 'ch7', title: 'الفصل السابع: إرث الرئيس', description: 'بعد سنوات من الحكم، ما الإرث الذي ستتركه؟ التاريخ يحكم عليك الآن.', unlockCondition: { type: 'turn', value: 80 }, completed: false },
+];
+
 export const initialGameState: GameState = {
   countryName: 'الجمهورية',
   presidentName: 'الرئيس',
@@ -176,6 +234,9 @@ export const initialGameState: GameState = {
   advisors: initialAdvisors,
   factions: initialFactions,
   victoryConditions: initialVictoryConditions,
+  characters: initialCharacters,
+  storyChapters: initialStoryChapters,
+  currentChapter: 0,
   gameWon: false,
   pendingEvents: [],
   eventCooldowns: [],
