@@ -1043,7 +1043,8 @@ export interface ActiveEventCooldown {
 
 export const getRandomEvent = (
   turnCount: number,
-  cooldowns: ActiveEventCooldown[]
+  cooldowns: ActiveEventCooldown[],
+  crisisBonus: number = 0
 ): RandomEvent | null => {
   const availableEvents = randomEvents.filter(event => {
     if (turnCount < event.minTurn) return false;
@@ -1056,10 +1057,10 @@ export const getRandomEvent = (
 
   if (availableEvents.length === 0) return null;
 
-  // Check probability for each event
+  // Check probability for each event (with crisis bonus)
   for (const event of availableEvents) {
     const roll = Math.random() * 100;
-    if (roll < event.probability) {
+    if (roll < event.probability + crisisBonus) {
       return event;
     }
   }
