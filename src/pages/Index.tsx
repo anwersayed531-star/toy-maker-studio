@@ -13,7 +13,9 @@ import { AdvisorsPanel } from '@/components/game/AdvisorsPanel';
 import { VictoryScreen } from '@/components/game/VictoryScreen';
 import { GameHeader } from '@/components/game/GameHeader';
 import { RandomEventNotification } from '@/components/game/RandomEventNotification';
-import { Map, Users, Trophy, Building, Crown } from 'lucide-react';
+import { CrisisAnimation } from '@/components/game/CrisisAnimation';
+import { StoryPanel } from '@/components/game/StoryPanel';
+import { Map, Users, Trophy, Building, Crown, BookOpen } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DifficultyLevel } from '@/types/game';
 import { useToast } from '@/hooks/use-toast';
@@ -96,13 +98,17 @@ const Index = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-4">
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Left Panel - Tabs for different systems */}
+          {/* Left Panel - Tabs */}
           <div className="lg:col-span-1 space-y-4">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-4 h-auto">
+              <TabsList className="grid w-full grid-cols-5 h-auto">
                 <TabsTrigger value="stats" className="flex flex-col gap-1 py-2">
                   <Crown className="w-4 h-4" />
                   <span className="text-xs">{t('tabStats')}</span>
+                </TabsTrigger>
+                <TabsTrigger value="story" className="flex flex-col gap-1 py-2">
+                  <BookOpen className="w-4 h-4" />
+                  <span className="text-xs">القصة</span>
                 </TabsTrigger>
                 <TabsTrigger value="map" className="flex flex-col gap-1 py-2">
                   <Map className="w-4 h-4" />
@@ -121,6 +127,14 @@ const Index = () => {
               <TabsContent value="stats" className="mt-4 space-y-4">
                 <StatsPanel gameState={gameState} />
                 <VictoryProgress conditions={gameState.victoryConditions} />
+              </TabsContent>
+
+              <TabsContent value="story" className="mt-4">
+                <StoryPanel
+                  chapters={gameState.storyChapters}
+                  currentChapter={gameState.currentChapter}
+                  characters={gameState.characters}
+                />
               </TabsContent>
 
               <TabsContent value="map" className="mt-4">
@@ -158,6 +172,9 @@ const Index = () => {
           </div>
         </div>
       </main>
+
+      {/* Crisis Animation */}
+      <CrisisAnimation crisis={gameState.activeCrisis} />
 
       {/* Effect Notification */}
       <EffectNotification effects={lastEffects} isVisible={showEffects} />

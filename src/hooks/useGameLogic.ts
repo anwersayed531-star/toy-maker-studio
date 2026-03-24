@@ -2,6 +2,8 @@ import { useState, useCallback, useEffect } from 'react';
 import { GameState, Choice, Decision, FollowUpEvent, DifficultyLevel, initialGameState } from '@/types/game';
 import { getRandomDecision, decisions } from '@/data/decisions';
 import { getRandomEvent, RandomEvent, ActiveEventCooldown } from '@/data/randomEvents';
+import { getStoryDecision } from '@/data/story';
+import { generateDecision } from '@/data/contentGenerator';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useGameSave } from '@/hooks/useGameSave';
 import { useAutoSave, loadAutoSave, hasAutoSave, clearAutoSave } from '@/hooks/useAutoSave';
@@ -9,6 +11,22 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { useLanguage } from '@/hooks/useLanguage';
 import { getGameOverTranslation } from '@/i18n/gameOverTranslations';
 import { getRegionName } from '@/i18n/entityTranslations';
+
+// Map random event types to crisis animation types
+const eventTypeToCrisis = (event: RandomEvent): GameState['activeCrisis'] => {
+  const typeMap: Record<string, 'earthquake' | 'war' | 'coup' | 'epidemic' | 'economic' | 'fire'> = {
+    disaster: 'earthquake',
+    war: 'war',
+    epidemic: 'epidemic',
+    political: 'coup',
+    economic: 'economic',
+    social: 'fire',
+  };
+  return {
+    type: typeMap[event.type] || 'fire',
+    severity: event.severity === 'low' ? 'medium' : event.severity as 'medium' | 'high' | 'critical',
+  };
+};
 
 export const useGameLogic = () => {
   const [gameState, setGameState] = useState<GameState>(initialGameState);
@@ -33,36 +51,18 @@ export const useGameLogic = () => {
     const updatedConditions = state.victoryConditions.map(condition => {
       let currentValue = 50;
       switch (condition.type) {
-        case 'economic':
-          currentValue = state.economy;
-          break;
-        case 'military':
-          currentValue = state.military;
-          break;
-        case 'diplomatic':
-          currentValue = state.diplomacy;
-          break;
-        case 'popular':
-          currentValue = state.popularity;
-          break;
+        case 'economic': currentValue = state.economy; break;
+        case 'military': currentValue = state.military; break;
+        case 'diplomatic': currentValue = state.diplomacy; break;
+        case 'popular': currentValue = state.popularity; break;
       }
-      return {
-        ...condition,
-        currentValue,
-        completed: currentValue >= condition.targetValue,
-      };
+      return { ...condition, currentValue, completed: currentValue >= condition.targetValue };
     });
 
     const completedCondition = updatedConditions.find(c => c.completed);
     if (completedCondition) {
-      return {
-        ...state,
-        victoryConditions: updatedConditions,
-        gameWon: true,
-        victoryType: completedCondition.name,
-      };
+      return { ...state, victoryConditions: updatedConditions, gameWon: true, victoryType: completedCondition.name };
     }
-
     return { ...state, victoryConditions: updatedConditions };
   }, []);
 
@@ -72,22 +72,16 @@ export const useGameLogic = () => {
     const t = getGameOverTranslation(currentLanguage);
     let gameOverReason: string | undefined;
 
-    if (state.economy <= 0) {
-      gameOverReason = t.economyCollapse;
-    } else if (state.military <= 0) {
-      gameOverReason = t.militaryCollapse;
-    } else if (state.popularity <= 0) {
-      gameOverReason = t.revolution;
-    } else if (state.diplomacy <= 0) {
-      gameOverReason = t.internationalIsolation;
-    } else if (state.treasury <= (state.difficulty === 'easy' ? -50 : state.difficulty === 'hard' ? -15 : -30)) {
+    if (state.economy <= 0) gameOverReason = t.economyCollapse;
+    else if (state.military <= 0) gameOverReason = t.militaryCollapse;
+    else if (state.popularity <= 0) gameOverReason = t.revolution;
+    else if (state.diplomacy <= 0) gameOverReason = t.internationalIsolation;
+    else if (state.treasury <= (state.difficulty === 'easy' ? -50 : state.difficulty === 'hard' ? -15 : -30))
       gameOverReason = t.totalBankruptcy;
-    }
 
     const militaryFaction = state.factions.find(f => f.id === 'military_faction');
-    if (militaryFaction && militaryFaction.support <= (state.difficulty === 'easy' ? 10 : state.difficulty === 'hard' ? 25 : 15)) {
+    if (militaryFaction && militaryFaction.support <= (state.difficulty === 'easy' ? 10 : state.difficulty === 'hard' ? 25 : 15))
       gameOverReason = t.militaryCoup;
-    }
 
     const rebelliousRegion = state.regions.find(r => r.unrest >= (state.difficulty === 'easy' ? 95 : state.difficulty === 'hard' ? 75 : 85));
     if (rebelliousRegion) {
@@ -95,33 +89,28 @@ export const useGameLogic = () => {
       gameOverReason = t.regionRebellion(regionName);
     }
 
-    if (gameOverReason) {
-      return { ...state, gameOver: true, gameOverReason };
+    // New: cascading crisis - if multiple stats are very low
+    const criticalStats = [state.economy, state.military, state.popularity, state.diplomacy].filter(s => s <= 15);
+    if (criticalStats.length >= 3) {
+      gameOverReason = t.economyCollapse; // total collapse
     }
 
+    if (gameOverReason) return { ...state, gameOver: true, gameOverReason };
     return state;
   }, [currentLanguage]);
 
   const processFollowUpEvents = useCallback((state: GameState): { state: GameState; triggeredEvent: Decision | null } => {
     const updatedEvents = state.pendingEvents.map(event => ({
-      ...event,
-      turnsUntilTrigger: event.turnsUntilTrigger - 1,
+      ...event, turnsUntilTrigger: event.turnsUntilTrigger - 1,
     }));
 
     const eventToTrigger = updatedEvents.find(e => e.turnsUntilTrigger <= 0 && !e.triggered);
-    
     if (eventToTrigger) {
       return {
-        state: {
-          ...state,
-          pendingEvents: updatedEvents.map(e => 
-            e.id === eventToTrigger.id ? { ...e, triggered: true } : e
-          ),
-        },
+        state: { ...state, pendingEvents: updatedEvents.map(e => e.id === eventToTrigger.id ? { ...e, triggered: true } : e) },
         triggeredEvent: eventToTrigger.decision,
       };
     }
-
     return { state: { ...state, pendingEvents: updatedEvents }, triggeredEvent: null };
   }, []);
 
@@ -130,45 +119,63 @@ export const useGameLogic = () => {
       .map(c => ({ ...c, turnsRemaining: c.turnsRemaining - 1 }))
       .filter(c => c.turnsRemaining > 0);
 
-    const randomEvent = getRandomEvent(state.turnCount, updatedCooldowns);
+    // Increase probability when stats are low (cascading crises)
+    const crisisBonus = [state.economy, state.military, state.popularity, state.diplomacy]
+      .filter(s => s < 20).length * 3;
+
+    const randomEvent = getRandomEvent(state.turnCount, updatedCooldowns, crisisBonus);
     
     if (randomEvent) {
-      updatedCooldowns.push({
-        eventId: randomEvent.id,
-        turnsRemaining: randomEvent.cooldown,
-      });
-
+      updatedCooldowns.push({ eventId: randomEvent.id, turnsRemaining: randomEvent.cooldown });
       return {
         state: {
           ...state,
           eventCooldowns: updatedCooldowns,
           lastRandomEvent: randomEvent.id,
+          activeCrisis: randomEvent.severity === 'critical' || randomEvent.severity === 'high'
+            ? eventTypeToCrisis(randomEvent) : undefined,
         },
         randomEvent,
       };
     }
-
     return { state: { ...state, eventCooldowns: updatedCooldowns }, randomEvent: null };
+  }, []);
+
+  // Update story chapters
+  const updateStory = useCallback((state: GameState): GameState => {
+    const chapters = [...state.storyChapters];
+    let newChapter = state.currentChapter;
+
+    for (let i = 0; i < chapters.length; i++) {
+      if (chapters[i].completed) continue;
+      const cond = chapters[i].unlockCondition;
+      if (cond.type === 'turn' && state.turnCount >= cond.value) {
+        if (i === newChapter) {
+          // Mark previous as completed, advance
+          if (i > 0) chapters[i - 1] = { ...chapters[i - 1], completed: true };
+          newChapter = i;
+        }
+      }
+    }
+
+    return { ...state, storyChapters: chapters, currentChapter: newChapter };
   }, []);
 
   const getDifficultyModifiers = useCallback((diff: DifficultyLevel) => {
     switch (diff) {
       case 'easy':
         return {
-          regionUnrestGain: 5, regionLoyaltyLoss: -3, loyaltyThreshold: 42,
-          unrestThreshold: 48,
+          regionUnrestGain: 5, regionLoyaltyLoss: -3, loyaltyThreshold: 42, unrestThreshold: 48,
           decay: { economyHigh: -2, economyLow: -2, popularityHigh: -2, popularityLow: -1, militaryHigh: -1, militaryLow: -1, diplomacyHigh: -1, diplomacyLow: -1, treasury: -2 },
         };
       case 'hard':
         return {
-          regionUnrestGain: 15, regionLoyaltyLoss: -10, loyaltyThreshold: 60,
-          unrestThreshold: 30,
-          decay: { economyHigh: -4, economyLow: -6, popularityHigh: -5, popularityLow: -3, militaryHigh: -3, militaryLow: -4, diplomacyHigh: -3, diplomacyLow: -4, treasury: -7 },
+          regionUnrestGain: 18, regionLoyaltyLoss: -12, loyaltyThreshold: 65, unrestThreshold: 25,
+          decay: { economyHigh: -5, economyLow: -7, popularityHigh: -6, popularityLow: -4, militaryHigh: -4, militaryLow: -5, diplomacyHigh: -4, diplomacyLow: -5, treasury: -8 },
         };
-      default: // medium
+      default:
         return {
-          regionUnrestGain: 10, regionLoyaltyLoss: -6, loyaltyThreshold: 52,
-          unrestThreshold: 38,
+          regionUnrestGain: 10, regionLoyaltyLoss: -6, loyaltyThreshold: 52, unrestThreshold: 38,
           decay: { economyHigh: -3, economyLow: -4, popularityHigh: -4, popularityLow: -2, militaryHigh: -2, militaryLow: -3, diplomacyHigh: -2, diplomacyLow: -3, treasury: -4 },
         };
     }
@@ -177,11 +184,7 @@ export const useGameLogic = () => {
   const advanceTime = useCallback((state: GameState): GameState => {
     let newMonth = state.month + 1;
     let newYear = state.year;
-
-    if (newMonth > 12) {
-      newMonth = 1;
-      newYear += 1;
-    }
+    if (newMonth > 12) { newMonth = 1; newYear += 1; }
 
     const mod = getDifficultyModifiers(state.difficulty);
 
@@ -199,12 +202,20 @@ export const useGameLogic = () => {
       treasury: mod.decay.treasury,
     };
 
+    // Update character loyalty based on game state
+    const updatedCharacters = state.characters.map(char => {
+      if (char.status !== 'alive') return char;
+      let loyaltyChange = 0;
+      if (state.popularity > 70) loyaltyChange += 2;
+      if (state.popularity < 30) loyaltyChange -= 3;
+      if (state.military < 20 && char.role.includes('عسكر')) loyaltyChange -= 5;
+      return { ...char, loyalty: Math.max(0, Math.min(100, char.loyalty + loyaltyChange)) };
+    });
+
     return {
       ...state,
-      month: newMonth,
-      year: newYear,
-      turnCount: state.turnCount + 1,
-      regions: updatedRegions,
+      month: newMonth, year: newYear, turnCount: state.turnCount + 1,
+      regions: updatedRegions, characters: updatedCharacters,
       economy: Math.max(0, Math.min(100, state.economy + decay.economy)),
       popularity: Math.max(0, Math.min(100, state.popularity + decay.popularity)),
       military: Math.max(0, Math.min(100, state.military + decay.military)),
@@ -214,18 +225,13 @@ export const useGameLogic = () => {
   }, [getDifficultyModifiers]);
 
   const selectRegion = useCallback((regionId: string) => {
-    setGameState(prev => ({
-      ...prev,
-      selectedRegion: prev.selectedRegion === regionId ? undefined : regionId,
-    }));
+    setGameState(prev => ({ ...prev, selectedRegion: prev.selectedRegion === regionId ? undefined : regionId }));
     playSound('click');
   }, [playSound]);
 
   const handleSaveGame = useCallback(() => {
     const success = saveGame(gameState, usedDecisions, currentDecision);
-    if (success) {
-      playSound('success');
-    }
+    if (success) playSound('success');
     return success;
   }, [saveGame, gameState, usedDecisions, currentDecision, playSound]);
 
@@ -235,7 +241,6 @@ export const useGameLogic = () => {
       setGameState(saved.gameState);
       setUsedDecisions(saved.usedDecisions);
       setGameStarted(true);
-      
       if (saved.currentDecisionId) {
         const decision = decisions.find(d => d.id === saved.currentDecisionId);
         setCurrentDecision(decision || getRandomDecision(saved.usedDecisions));
@@ -247,18 +252,29 @@ export const useGameLogic = () => {
     }
   }, [loadGame, playSound, cancelReminder]);
 
+  const getNextDecision = useCallback((usedIds: string[], state: GameState): Decision | null => {
+    // 1. Try story decision first
+    const storyDec = getStoryDecision(state.currentChapter, usedIds);
+    if (storyDec) return storyDec;
+    
+    // 2. Try regular decisions
+    const regularDec = getRandomDecision(usedIds);
+    if (regularDec) return regularDec;
+    
+    // 3. Generate procedural content
+    return generateDecision(state);
+  }, []);
+
   const startGame = useCallback((presidentName: string, countryName: string, difficulty: DifficultyLevel = 'medium') => {
     const diffStats: Record<DifficultyLevel, Partial<GameState>> = {
       easy: { economy: 55, military: 55, popularity: 55, diplomacy: 55, treasury: 100 },
       medium: { economy: 40, military: 40, popularity: 42, diplomacy: 40, treasury: 65 },
-      hard: { economy: 25, military: 25, popularity: 28, diplomacy: 25, treasury: 35 },
+      hard: { economy: 22, military: 22, popularity: 25, diplomacy: 22, treasury: 30 },
     };
     const newState: GameState = {
       ...initialGameState,
       ...diffStats[difficulty],
-      presidentName,
-      countryName,
-      difficulty,
+      presidentName, countryName, difficulty,
     };
     setGameState(newState);
     setUsedDecisions([]);
@@ -268,10 +284,10 @@ export const useGameLogic = () => {
     clearAutoSave();
     cancelReminder();
 
-    const decision = getRandomDecision([]);
+    const decision = getNextDecision([], newState);
     setCurrentDecision(decision);
     playSound('success');
-  }, [deleteSave, playSound, cancelReminder]);
+  }, [deleteSave, playSound, cancelReminder, getNextDecision]);
 
   const makeChoice = useCallback((choice: Choice) => {
     if (!currentDecision) return;
@@ -289,7 +305,7 @@ export const useGameLogic = () => {
     });
 
     if (choice.regionEffects) {
-      const updatedRegions = newState.regions.map(region => {
+      newState.regions = newState.regions.map(region => {
         const regionEffect = choice.regionEffects?.find(re => re.regionId === region.id);
         if (regionEffect) {
           return {
@@ -302,21 +318,16 @@ export const useGameLogic = () => {
         }
         return region;
       });
-      newState.regions = updatedRegions;
     }
 
     if (choice.factionEffects) {
-      const updatedFactions = newState.factions.map(faction => {
+      newState.factions = newState.factions.map(faction => {
         const factionEffect = choice.factionEffects?.find(fe => fe.factionId === faction.id);
         if (factionEffect) {
-          return {
-            ...faction,
-            support: Math.max(0, Math.min(100, faction.support + factionEffect.supportChange)),
-          };
+          return { ...faction, support: Math.max(0, Math.min(100, faction.support + factionEffect.supportChange)) };
         }
         return faction;
       });
-      newState.factions = updatedFactions;
     }
 
     if (currentDecision.followUpEvents) {
@@ -341,17 +352,15 @@ export const useGameLogic = () => {
     const hasNegativeEffects = effects.some(e => e.value < 0);
     
     setTimeout(() => {
-      if (hasPositiveEffects && !hasNegativeEffects) {
-        playSound('success');
-      } else if (hasNegativeEffects && !hasPositiveEffects) {
-        playSound('warning');
-      }
+      if (hasPositiveEffects && !hasNegativeEffects) playSound('success');
+      else if (hasNegativeEffects && !hasPositiveEffects) playSound('warning');
     }, 300);
 
     const newUsedDecisions = [...usedDecisions, currentDecision.id];
     setUsedDecisions(newUsedDecisions);
 
     let updatedState = advanceTime(newState);
+    updatedState = updateStory(updatedState);
     const { state: stateAfterEvents, triggeredEvent } = processFollowUpEvents(updatedState);
     updatedState = stateAfterEvents;
 
@@ -366,15 +375,11 @@ export const useGameLogic = () => {
     if (updatedState.gameWon) {
       setTimeout(() => playSound('victory'), 500);
       updateStats(updatedState, true);
-      deleteSave();
-      clearAutoSave();
-      scheduleReminder();
+      deleteSave(); clearAutoSave(); scheduleReminder();
     } else if (updatedState.gameOver) {
       setTimeout(() => playSound('gameOver'), 500);
       updateStats(updatedState, false);
-      deleteSave();
-      clearAutoSave();
-      scheduleReminder();
+      deleteSave(); clearAutoSave(); scheduleReminder();
     }
 
     setTimeout(() => {
@@ -393,18 +398,12 @@ export const useGameLogic = () => {
         } else if (triggeredEvent) {
           setCurrentDecision(triggeredEvent);
         } else {
-          const nextDecision = getRandomDecision(newUsedDecisions);
-          if (nextDecision) {
-            setCurrentDecision(nextDecision);
-          } else {
-            setUsedDecisions([]);
-            const resetDecision = getRandomDecision([]);
-            setCurrentDecision(resetDecision);
-          }
+          const nextDecision = getNextDecision(newUsedDecisions, updatedState);
+          setCurrentDecision(nextDecision);
         }
       }
     }, 2000);
-  }, [currentDecision, gameState, usedDecisions, advanceTime, checkGameOver, checkVictory, processFollowUpEvents, processRandomEvents, playSound, updateStats, deleteSave]);
+  }, [currentDecision, gameState, usedDecisions, advanceTime, updateStory, checkGameOver, checkVictory, processFollowUpEvents, processRandomEvents, playSound, updateStats, deleteSave, getNextDecision]);
 
   const restartGame = useCallback(() => {
     setGameState(initialGameState);
