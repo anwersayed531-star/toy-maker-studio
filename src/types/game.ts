@@ -49,6 +49,19 @@ export interface FollowUpEvent {
 
 export type DifficultyLevel = 'easy' | 'medium' | 'hard';
 
+export interface TurnGoal {
+  id: string;
+  description: string;
+  type: 'maintain_stat' | 'increase_stat' | 'reduce_unrest' | 'gain_support';
+  targetStat?: string;
+  targetValue: number;
+  regionId?: string;
+  factionId?: string;
+  turnsRemaining: number;
+  reward: Partial<Pick<GameState, 'economy' | 'military' | 'popularity' | 'diplomacy' | 'treasury'>>;
+  penalty: Partial<Pick<GameState, 'economy' | 'military' | 'popularity' | 'diplomacy' | 'treasury'>>;
+}
+
 export type CharacterStatus = 'alive' | 'imprisoned' | 'exiled' | 'dead';
 
 export interface Character {
