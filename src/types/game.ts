@@ -123,7 +123,12 @@ export interface GameState {
   activeCrisis?: {
     type: 'earthquake' | 'war' | 'coup' | 'epidemic' | 'economic' | 'fire';
     severity: 'medium' | 'high' | 'critical';
+    id: string; // unique id to prevent re-triggering
   };
+  
+  // Turn Goals
+  turnGoal?: TurnGoal;
+  turnGoalCompleted?: boolean;
   
   // Game status
   gameOver: boolean;
