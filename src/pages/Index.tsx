@@ -15,7 +15,7 @@ import { GameHeader } from '@/components/game/GameHeader';
 import { RandomEventNotification } from '@/components/game/RandomEventNotification';
 import { CrisisAnimation } from '@/components/game/CrisisAnimation';
 import { StoryPanel } from '@/components/game/StoryPanel';
-import { Map, Users, Trophy, Building, Crown, BookOpen } from 'lucide-react';
+import { Map, Users, Trophy, Building, Crown, BookOpen, Target } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DifficultyLevel } from '@/types/game';
 import { useToast } from '@/hooks/use-toast';
@@ -94,6 +94,43 @@ const Index = () => {
         onLanguageChange={changeLanguage}
         onClearData={handleClearData}
       />
+
+      {/* Turn Goal Banner */}
+      {gameState.turnGoal && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="container mx-auto px-4 pt-2"
+        >
+          <div className="bg-primary/10 border border-primary/30 rounded-lg px-4 py-2 flex items-center gap-3">
+            <Target className="w-5 h-5 text-primary shrink-0" />
+            <div className="flex-1 min-w-0">
+              <span className="text-sm font-medium text-primary">🎯 هدف الدور: </span>
+              <span className="text-sm text-foreground">{gameState.turnGoal.description}</span>
+            </div>
+            <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full shrink-0">
+              {gameState.turnGoal.turnsRemaining} أدوار
+            </span>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Turn Goal Result */}
+      {gameState.turnGoalCompleted !== undefined && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="container mx-auto px-4 pt-2"
+        >
+          <div className={`rounded-lg px-4 py-2 text-center text-sm font-medium ${
+            gameState.turnGoalCompleted 
+              ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-600' 
+              : 'bg-destructive/10 border border-destructive/30 text-destructive'
+          }`}>
+            {gameState.turnGoalCompleted ? '✅ أحسنت! حققت الهدف وحصلت على مكافأة!' : '❌ فشلت في تحقيق الهدف. هناك عواقب...'}
+          </div>
+        </motion.div>
+      )}
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-4">

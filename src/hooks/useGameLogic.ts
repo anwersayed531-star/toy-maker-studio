@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { GameState, Choice, Decision, FollowUpEvent, DifficultyLevel, initialGameState } from '@/types/game';
+import { GameState, Choice, Decision, FollowUpEvent, DifficultyLevel, TurnGoal, initialGameState } from '@/types/game';
 import { getRandomDecision, decisions } from '@/data/decisions';
 import { getRandomEvent, RandomEvent, ActiveEventCooldown } from '@/data/randomEvents';
 import { getStoryDecision } from '@/data/story';
@@ -28,6 +28,56 @@ const eventTypeToCrisis = (event: RandomEvent): GameState['activeCrisis'] => {
     id: `crisis_${event.id}_${Date.now()}`,
   };
 };
+
+// Turn goal templates
+const turnGoalTemplates: Omit<TurnGoal, 'id' | 'turnsRemaining'>[] = [
+  { description: 'حافظ على الاقتصاد فوق 40', type: 'maintain_stat', targetStat: 'economy', targetValue: 40, reward: { treasury: 20, economy: 5 }, penalty: { economy: -10, popularity: -5 } },
+  { description: 'حافظ على الشعبية فوق 50', type: 'maintain_stat', targetStat: 'popularity', targetValue: 50, reward: { popularity: 10, treasury: 15 }, penalty: { popularity: -15 } },
+  { description: 'ارفع القوة العسكرية فوق 50', type: 'increase_stat', targetStat: 'military', targetValue: 50, reward: { military: 10, treasury: 10 }, penalty: { military: -10 } },
+  { description: 'حافظ على الدبلوماسية فوق 35', type: 'maintain_stat', targetStat: 'diplomacy', targetValue: 35, reward: { diplomacy: 10, economy: 5 }, penalty: { diplomacy: -10, economy: -5 } },
+  { description: 'اخفض الاضطرابات في الجنوب تحت 30', type: 'reduce_unrest', regionId: 'south', targetValue: 30, reward: { popularity: 15, treasury: 10 }, penalty: { popularity: -10 } },
+  { description: 'اخفض الاضطرابات في العاصمة تحت 25', type: 'reduce_unrest', regionId: 'capital', targetValue: 25, reward: { popularity: 20, economy: 5 }, penalty: { popularity: -15, economy: -5 } },
+  { description: 'اكسب دعم المؤسسة العسكرية فوق 60', type: 'gain_support', factionId: 'military_faction', targetValue: 60, reward: { military: 15 }, penalty: { military: -10, popularity: -5 } },
+  { description: 'اكسب دعم نقابات العمال فوق 55', type: 'gain_support', factionId: 'labor', targetValue: 55, reward: { popularity: 15, economy: 5 }, penalty: { popularity: -10 } },
+  { description: 'حافظ على الخزينة فوق 30', type: 'maintain_stat', targetStat: 'treasury', targetValue: 30, reward: { treasury: 25 }, penalty: { treasury: -15, economy: -5 } },
+  { description: 'ارفع الاقتصاد فوق 60', type: 'increase_stat', targetStat: 'economy', targetValue: 60, reward: { economy: 10, treasury: 30, popularity: 5 }, penalty: { economy: -10 } },
+];
+
+function generateTurnGoal(state: GameState): TurnGoal {
+  // Pick a contextual goal - prefer goals for struggling areas
+  const candidates = turnGoalTemplates.filter(g => {
+    if (g.type === 'maintain_stat' && g.targetStat) {
+      const val = (state as any)[g.targetStat];
+      return val !== undefined && val < g.targetValue + 20;
+    }
+    return true;
+  });
+  const template = candidates[Math.floor(Math.random() * candidates.length)];
+  const turnsRemaining = state.difficulty === 'hard' ? 3 : state.difficulty === 'easy' ? 6 : 4;
+  return { ...template, id: `goal_${Date.now()}`, turnsRemaining };
+}
+
+function checkTurnGoal(state: GameState): { completed: boolean } {
+  const goal = state.turnGoal;
+  if (!goal) return { completed: false };
+  
+  switch (goal.type) {
+    case 'maintain_stat':
+    case 'increase_stat': {
+      const val = (state as any)[goal.targetStat!];
+      return { completed: val >= goal.targetValue };
+    }
+    case 'reduce_unrest': {
+      const region = state.regions.find(r => r.id === goal.regionId);
+      return { completed: region ? region.unrest < goal.targetValue : false };
+    }
+    case 'gain_support': {
+      const faction = state.factions.find(f => f.id === goal.factionId);
+      return { completed: faction ? faction.support >= goal.targetValue : false };
+    }
+  }
+  return { completed: false };
+}
 
 export const useGameLogic = () => {
   const [gameState, setGameState] = useState<GameState>(initialGameState);
@@ -90,10 +140,10 @@ export const useGameLogic = () => {
       gameOverReason = t.regionRebellion(regionName);
     }
 
-    // New: cascading crisis - if multiple stats are very low
+    // Cascading crisis - if multiple stats are very low
     const criticalStats = [state.economy, state.military, state.popularity, state.diplomacy].filter(s => s <= 15);
     if (criticalStats.length >= 3) {
-      gameOverReason = t.economyCollapse; // total collapse
+      gameOverReason = t.economyCollapse;
     }
 
     if (gameOverReason) return { ...state, gameOver: true, gameOverReason };
@@ -152,7 +202,6 @@ export const useGameLogic = () => {
       const cond = chapters[i].unlockCondition;
       if (cond.type === 'turn' && state.turnCount >= cond.value) {
         if (i === newChapter) {
-          // Mark previous as completed, advance
           if (i > 0) chapters[i - 1] = { ...chapters[i - 1], completed: true };
           newChapter = i;
         }
@@ -160,6 +209,45 @@ export const useGameLogic = () => {
     }
 
     return { ...state, storyChapters: chapters, currentChapter: newChapter };
+  }, []);
+
+  // Process turn goals
+  const processTurnGoals = useCallback((state: GameState): GameState => {
+    let newState = { ...state };
+    
+    if (newState.turnGoal) {
+      // Decrement turns remaining
+      const goal = { ...newState.turnGoal, turnsRemaining: newState.turnGoal.turnsRemaining - 1 };
+      newState.turnGoal = goal;
+      
+      if (goal.turnsRemaining <= 0) {
+        const { completed } = checkTurnGoal(newState);
+        if (completed) {
+          // Apply reward
+          Object.entries(goal.reward).forEach(([stat, value]) => {
+            if (value !== undefined) {
+              (newState as any)[stat] = Math.max(0, Math.min(100, ((newState as any)[stat] || 0) + value));
+            }
+          });
+          newState.turnGoalCompleted = true;
+        } else {
+          // Apply penalty
+          Object.entries(goal.penalty).forEach(([stat, value]) => {
+            if (value !== undefined) {
+              (newState as any)[stat] = Math.max(0, Math.min(100, ((newState as any)[stat] || 0) + value));
+            }
+          });
+          newState.turnGoalCompleted = false;
+        }
+        // Generate new goal after a few turns
+        newState.turnGoal = undefined;
+      }
+    } else if (state.turnCount > 0 && state.turnCount % 4 === 0) {
+      // Generate new goal every 4 turns
+      newState.turnGoal = generateTurnGoal(state);
+    }
+    
+    return newState;
   }, []);
 
   const getDifficultyModifiers = useCallback((diff: DifficultyLevel) => {
@@ -362,6 +450,7 @@ export const useGameLogic = () => {
 
     let updatedState = advanceTime(newState);
     updatedState = updateStory(updatedState);
+    updatedState = processTurnGoals(updatedState);
     const { state: stateAfterEvents, triggeredEvent } = processFollowUpEvents(updatedState);
     updatedState = stateAfterEvents;
 
@@ -404,7 +493,7 @@ export const useGameLogic = () => {
         }
       }
     }, 2000);
-  }, [currentDecision, gameState, usedDecisions, advanceTime, updateStory, checkGameOver, checkVictory, processFollowUpEvents, processRandomEvents, playSound, updateStats, deleteSave, getNextDecision]);
+  }, [currentDecision, gameState, usedDecisions, advanceTime, updateStory, processTurnGoals, checkGameOver, checkVictory, processFollowUpEvents, processRandomEvents, playSound, updateStats, deleteSave, getNextDecision]);
 
   const restartGame = useCallback(() => {
     setGameState(initialGameState);
