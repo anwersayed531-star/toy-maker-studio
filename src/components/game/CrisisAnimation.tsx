@@ -1,18 +1,21 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 interface CrisisAnimationProps {
   crisis: {
     type: 'earthquake' | 'war' | 'coup' | 'epidemic' | 'economic' | 'fire';
     severity: 'medium' | 'high' | 'critical';
+    id: string;
   } | undefined;
 }
 
 export const CrisisAnimation = ({ crisis }: CrisisAnimationProps) => {
   const [show, setShow] = useState(false);
+  const lastCrisisId = useRef<string | null>(null);
 
   useEffect(() => {
-    if (crisis) {
+    if (crisis && crisis.id !== lastCrisisId.current) {
+      lastCrisisId.current = crisis.id;
       setShow(true);
       const timer = setTimeout(() => setShow(false), 3000);
       return () => clearTimeout(timer);
@@ -24,61 +27,19 @@ export const CrisisAnimation = ({ crisis }: CrisisAnimationProps) => {
   const getOverlayConfig = () => {
     switch (crisis.type) {
       case 'earthquake':
-        return {
-          bg: 'bg-amber-900/40',
-          emoji: '🌍',
-          text: 'زلزال!',
-          shake: true,
-          particles: ['💥', '🏚️', '🪨'],
-        };
+        return { bg: 'bg-amber-900/40', emoji: '🌍', text: 'زلزال!', shake: true, particles: ['💥', '🏚️', '🪨'] };
       case 'war':
-        return {
-          bg: 'bg-red-900/50',
-          emoji: '⚔️',
-          text: 'حرب!',
-          shake: false,
-          particles: ['💥', '🔥', '💣'],
-        };
+        return { bg: 'bg-red-900/50', emoji: '⚔️', text: 'حرب!', shake: false, particles: ['💥', '🔥', '💣'] };
       case 'coup':
-        return {
-          bg: 'bg-gray-900/70',
-          emoji: '🎖️',
-          text: 'انقلاب!',
-          shake: false,
-          particles: ['⚡', '🔫', '🚨'],
-        };
+        return { bg: 'bg-gray-900/70', emoji: '🎖️', text: 'انقلاب!', shake: false, particles: ['⚡', '🔫', '🚨'] };
       case 'epidemic':
-        return {
-          bg: 'bg-green-900/40',
-          emoji: '🦠',
-          text: 'وباء!',
-          shake: false,
-          particles: ['🦠', '😷', '💉'],
-        };
+        return { bg: 'bg-green-900/40', emoji: '🦠', text: 'وباء!', shake: false, particles: ['🦠', '😷', '💉'] };
       case 'economic':
-        return {
-          bg: 'bg-orange-900/40',
-          emoji: '📉',
-          text: 'انهيار اقتصادي!',
-          shake: false,
-          particles: ['💸', '📉', '🏦'],
-        };
+        return { bg: 'bg-orange-900/40', emoji: '📉', text: 'انهيار اقتصادي!', shake: false, particles: ['💸', '📉', '🏦'] };
       case 'fire':
-        return {
-          bg: 'bg-red-800/40',
-          emoji: '🔥',
-          text: 'حريق!',
-          shake: false,
-          particles: ['🔥', '🔥', '💨'],
-        };
+        return { bg: 'bg-red-800/40', emoji: '🔥', text: 'حريق!', shake: false, particles: ['🔥', '🔥', '💨'] };
       default:
-        return {
-          bg: 'bg-red-900/30',
-          emoji: '⚠️',
-          text: 'أزمة!',
-          shake: false,
-          particles: ['⚡'],
-        };
+        return { bg: 'bg-red-900/30', emoji: '⚠️', text: 'أزمة!', shake: false, particles: ['⚡'] };
     }
   };
 
@@ -87,6 +48,7 @@ export const CrisisAnimation = ({ crisis }: CrisisAnimationProps) => {
   return (
     <AnimatePresence>
       <motion.div
+        key={crisis.id}
         className={`fixed inset-0 z-[100] pointer-events-none ${config.bg}`}
         initial={{ opacity: 0 }}
         animate={config.shake ? {
@@ -98,7 +60,6 @@ export const CrisisAnimation = ({ crisis }: CrisisAnimationProps) => {
         }}
         transition={{ duration: 2.5, ease: 'easeInOut' }}
       >
-        {/* Central emoji */}
         <motion.div
           className="absolute inset-0 flex items-center justify-center"
           initial={{ scale: 0, rotate: -20 }}
@@ -108,7 +69,6 @@ export const CrisisAnimation = ({ crisis }: CrisisAnimationProps) => {
           <span className="text-8xl filter drop-shadow-2xl">{config.emoji}</span>
         </motion.div>
 
-        {/* Crisis text */}
         <motion.div
           className="absolute inset-0 flex items-end justify-center pb-32"
           initial={{ opacity: 0, y: 30 }}
@@ -120,11 +80,10 @@ export const CrisisAnimation = ({ crisis }: CrisisAnimationProps) => {
           </span>
         </motion.div>
 
-        {/* Floating particles */}
         {config.particles.map((particle, i) => (
           Array.from({ length: 4 }).map((_, j) => (
             <motion.span
-              key={`${i}-${j}`}
+              key={`${crisis.id}-${i}-${j}`}
               className="absolute text-3xl"
               style={{
                 left: `${15 + Math.random() * 70}%`,
@@ -149,7 +108,6 @@ export const CrisisAnimation = ({ crisis }: CrisisAnimationProps) => {
           ))
         ))}
 
-        {/* Screen border flash for critical */}
         {crisis.severity === 'critical' && (
           <motion.div
             className="absolute inset-0 border-4 border-red-500 rounded-none"

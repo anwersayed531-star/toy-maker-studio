@@ -49,6 +49,19 @@ export interface FollowUpEvent {
 
 export type DifficultyLevel = 'easy' | 'medium' | 'hard';
 
+export interface TurnGoal {
+  id: string;
+  description: string;
+  type: 'maintain_stat' | 'increase_stat' | 'reduce_unrest' | 'gain_support';
+  targetStat?: string;
+  targetValue: number;
+  regionId?: string;
+  factionId?: string;
+  turnsRemaining: number;
+  reward: Partial<Pick<GameState, 'economy' | 'military' | 'popularity' | 'diplomacy' | 'treasury'>>;
+  penalty: Partial<Pick<GameState, 'economy' | 'military' | 'popularity' | 'diplomacy' | 'treasury'>>;
+}
+
 export type CharacterStatus = 'alive' | 'imprisoned' | 'exiled' | 'dead';
 
 export interface Character {
@@ -123,7 +136,12 @@ export interface GameState {
   activeCrisis?: {
     type: 'earthquake' | 'war' | 'coup' | 'epidemic' | 'economic' | 'fire';
     severity: 'medium' | 'high' | 'critical';
+    id: string; // unique id to prevent re-triggering
   };
+  
+  // Turn Goals
+  turnGoal?: TurnGoal;
+  turnGoalCompleted?: boolean;
   
   // Game status
   gameOver: boolean;
@@ -216,6 +234,9 @@ const initialStoryChapters: StoryChapter[] = [
   { id: 'ch5', title: 'الفصل الخامس: لحظة الحقيقة', description: 'كل قراراتك السابقة تقودك لهذه اللحظة. هل ستُكتب كبطل أم كطاغية في التاريخ؟', unlockCondition: { type: 'turn', value: 45 }, completed: false },
   { id: 'ch6', title: 'الفصل السادس: الحرب الكبرى', description: 'تهديد خارجي يلوح في الأفق. عليك توحيد البلاد أو مواجهة الدمار.', unlockCondition: { type: 'turn', value: 60 }, completed: false },
   { id: 'ch7', title: 'الفصل السابع: إرث الرئيس', description: 'بعد سنوات من الحكم، ما الإرث الذي ستتركه؟ التاريخ يحكم عليك الآن.', unlockCondition: { type: 'turn', value: 80 }, completed: false },
+  { id: 'ch8', title: 'الفصل الثامن: السلاح النووي', description: 'البرنامج النووي يصل مرحلة حاسمة. العالم يترقب قرارك. هل ستغير موازين القوى؟', unlockCondition: { type: 'turn', value: 100 }, completed: false },
+  { id: 'ch9', title: 'الفصل التاسع: أزمة الخلافة', description: 'صحتك تتدهور والجميع يتسابق على الحكم. من سيخلفك وكيف سينتهي عصرك؟', unlockCondition: { type: 'turn', value: 120 }, completed: false },
+  { id: 'ch10', title: 'الفصل العاشر: العصر الذهبي', description: 'بلادك أصبحت قوة إقليمية. هل ستبني عصراً ذهبياً أم ستسقط من القمة؟', unlockCondition: { type: 'turn', value: 150 }, completed: false },
 ];
 
 export const initialGameState: GameState = {

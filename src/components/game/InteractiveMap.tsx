@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Region } from '@/types/game';
-import { MapPin, Users, TrendingUp, Heart, AlertTriangle } from 'lucide-react';
+import { MapPin, Users, TrendingUp, Heart, AlertTriangle, Hammer, Coins } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { getRegionName } from '@/i18n/entityTranslations';
 
@@ -11,19 +11,33 @@ interface InteractiveMapProps {
 }
 
 const regionPositions: Record<string, { x: number; y: number; width: number; height: number }> = {
-  capital: { x: 45, y: 40, width: 15, height: 15 },
-  north: { x: 35, y: 10, width: 35, height: 25 },
-  south: { x: 30, y: 70, width: 40, height: 25 },
-  east: { x: 70, y: 35, width: 25, height: 30 },
-  west: { x: 5, y: 35, width: 25, height: 30 },
-  coast: { x: 15, y: 65, width: 15, height: 30 },
+  capital: { x: 38, y: 35, width: 20, height: 18 },
+  north: { x: 28, y: 5, width: 40, height: 28 },
+  south: { x: 25, y: 65, width: 45, height: 30 },
+  east: { x: 65, y: 30, width: 30, height: 35 },
+  west: { x: 2, y: 30, width: 28, height: 35 },
+  coast: { x: 5, y: 68, width: 20, height: 28 },
 };
 
 const getRegionColor = (region: Region) => {
-  const avgStat = (region.economy + region.loyalty + region.development - region.unrest) / 3;
-  if (avgStat >= 60) return 'hsl(var(--success))';
-  if (avgStat >= 40) return 'hsl(var(--warning))';
-  return 'hsl(var(--destructive))';
+  const score = (region.economy + region.loyalty + region.development) / 3 - region.unrest * 0.5;
+  if (score >= 50) return 'from-emerald-500/70 to-emerald-700/70';
+  if (score >= 30) return 'from-amber-500/70 to-amber-700/70';
+  return 'from-red-500/70 to-red-700/70';
+};
+
+const getRegionBorderColor = (region: Region) => {
+  if (region.unrest > 50) return 'border-red-500';
+  if (region.unrest > 30) return 'border-amber-500';
+  return 'border-emerald-500/50';
+};
+
+const resourceIcons: Record<string, string> = {
+  oil: '🛢️',
+  agriculture: '🌾',
+  industry: '🏭',
+  tourism: '🏖️',
+  mining: '⛏️',
 };
 
 export const InteractiveMap = ({ regions, selectedRegion, onSelectRegion }: InteractiveMapProps) => {
@@ -38,9 +52,9 @@ export const InteractiveMap = ({ regions, selectedRegion, onSelectRegion }: Inte
       </h3>
       
       {/* Map Container */}
-      <div className="relative bg-muted/30 rounded-lg aspect-[4/3] overflow-hidden border border-border/50">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
+      <div className="relative bg-gradient-to-br from-muted/20 to-muted/40 rounded-lg aspect-[4/3] overflow-hidden border border-border/50">
+        {/* Background grid */}
+        <div className="absolute inset-0 opacity-5">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -51,6 +65,15 @@ export const InteractiveMap = ({ regions, selectedRegion, onSelectRegion }: Inte
           </svg>
         </div>
 
+        {/* Connection lines between regions */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20" viewBox="0 0 100 100">
+          <line x1="48" y1="44" x2="48" y2="19" stroke="currentColor" strokeWidth="0.3" strokeDasharray="2,2" />
+          <line x1="48" y1="53" x2="47" y2="80" stroke="currentColor" strokeWidth="0.3" strokeDasharray="2,2" />
+          <line x1="58" y1="44" x2="80" y2="47" stroke="currentColor" strokeWidth="0.3" strokeDasharray="2,2" />
+          <line x1="38" y1="44" x2="16" y2="47" stroke="currentColor" strokeWidth="0.3" strokeDasharray="2,2" />
+          <line x1="15" y1="65" x2="15" y2="82" stroke="currentColor" strokeWidth="0.3" strokeDasharray="2,2" />
+        </svg>
+
         {/* Regions */}
         {regions.map((region) => {
           const pos = regionPositions[region.id];
@@ -60,23 +83,33 @@ export const InteractiveMap = ({ regions, selectedRegion, onSelectRegion }: Inte
             <motion.button
               key={region.id}
               onClick={() => onSelectRegion(region.id)}
-              className={`absolute rounded-lg transition-all cursor-pointer flex flex-col items-center justify-center text-xs font-medium
-                ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-card z-10' : 'hover:scale-105'}`}
+              className={`absolute rounded-lg bg-gradient-to-br ${getRegionColor(region)} border-2 ${getRegionBorderColor(region)}
+                transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5
+                ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-card z-10 shadow-lg' : 'hover:scale-105 hover:shadow-md'}`}
               style={{
                 left: `${pos.x}%`,
                 top: `${pos.y}%`,
                 width: `${pos.width}%`,
                 height: `${pos.height}%`,
-                backgroundColor: getRegionColor(region),
               }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
             >
-              <span className="text-white font-bold text-shadow drop-shadow-lg">
+              <span className="text-white font-bold text-[10px] sm:text-xs drop-shadow-lg leading-tight">
                 {getRegionName(region.id, currentLanguage)}
               </span>
+              <div className="flex items-center gap-0.5">
+                {region.resources.slice(0, 2).map(r => (
+                  <span key={r} className="text-[8px] sm:text-[10px]">{resourceIcons[r]}</span>
+                ))}
+              </div>
               {region.unrest > 40 && (
-                <AlertTriangle className="w-3 h-3 text-white mt-1 animate-pulse" />
+                <motion.div
+                  animate={{ scale: [1, 1.3, 1] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                >
+                  <AlertTriangle className="w-3 h-3 text-white drop-shadow" />
+                </motion.div>
               )}
             </motion.button>
           );
@@ -88,9 +121,9 @@ export const InteractiveMap = ({ regions, selectedRegion, onSelectRegion }: Inte
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mt-4 p-4 bg-muted/50 rounded-lg border border-border/50"
+          className="mt-4 p-4 bg-muted/30 rounded-lg border border-border/50 space-y-3"
         >
-          <h4 className="font-bold text-foreground mb-3">{getRegionName(selected.id, currentLanguage)}</h4>
+          <h4 className="font-bold text-foreground text-lg">{getRegionName(selected.id, currentLanguage)}</h4>
           
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div className="flex items-center gap-2">
@@ -99,7 +132,7 @@ export const InteractiveMap = ({ regions, selectedRegion, onSelectRegion }: Inte
               <span className="font-medium text-foreground">{selected.population}M</span>
             </div>
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-success" />
+              <TrendingUp className="w-4 h-4 text-emerald-500" />
               <span className="text-muted-foreground">{t('economy')}:</span>
               <span className="font-medium text-foreground">{selected.economy}%</span>
             </div>
@@ -109,22 +142,45 @@ export const InteractiveMap = ({ regions, selectedRegion, onSelectRegion }: Inte
               <span className="font-medium text-foreground">{selected.loyalty}%</span>
             </div>
             <div className="flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-warning" />
+              <AlertTriangle className="w-4 h-4 text-amber-500" />
               <span className="text-muted-foreground">{t('unrest')}:</span>
               <span className={`font-medium ${selected.unrest > 50 ? 'text-destructive' : 'text-foreground'}`}>
                 {selected.unrest}%
               </span>
             </div>
+            <div className="flex items-center gap-2">
+              <Hammer className="w-4 h-4 text-blue-500" />
+              <span className="text-muted-foreground">التنمية:</span>
+              <span className="font-medium text-foreground">{selected.development}%</span>
+            </div>
           </div>
 
-          <div className="mt-3 flex flex-wrap gap-1">
+          {/* Stat Bars */}
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground w-14">اقتصاد</span>
+              <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-emerald-500 rounded-full transition-all" style={{ width: `${selected.economy}%` }} />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground w-14">ولاء</span>
+              <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${selected.loyalty}%` }} />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground w-14">اضطراب</span>
+              <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                <div className={`h-full rounded-full transition-all ${selected.unrest > 50 ? 'bg-destructive' : 'bg-amber-500'}`} style={{ width: `${selected.unrest}%` }} />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-1.5">
             {selected.resources.map(resource => (
-              <span key={resource} className="px-2 py-0.5 bg-primary/20 text-primary text-xs rounded-full">
-                {resource === 'oil' && `🛢️ ${t('oil')}`}
-                {resource === 'agriculture' && `🌾 ${t('agriculture')}`}
-                {resource === 'industry' && `🏭 ${t('industry')}`}
-                {resource === 'tourism' && `🏖️ ${t('tourism')}`}
-                {resource === 'mining' && `⛏️ ${t('mining')}`}
+              <span key={resource} className="px-2 py-1 bg-primary/15 text-primary text-xs rounded-full border border-primary/20">
+                {resourceIcons[resource]} {resource === 'oil' ? t('oil') : resource === 'agriculture' ? t('agriculture') : resource === 'industry' ? t('industry') : resource === 'tourism' ? t('tourism') : t('mining')}
               </span>
             ))}
           </div>

@@ -87,12 +87,19 @@ const socialTemplates: DecisionTemplate = {
     'انتشار جرائم في {area}',
     'مطالب بحقوق المرأة',
     'أزمة مياه شرب حادة',
+    'أزمة إسكان في {area}',
+    'انتشار وباء في {area}',
+    'كارثة تعليمية',
+    'أزمة صحة نفسية بين الشباب',
+    'تلوث بيئي خطير في {area}',
   ],
   descriptionTemplates: [
     'الشعب يعاني والمطالب تتصاعد. عليك اتخاذ قرار يرضي الجميع... أو لا أحد.',
     'أزمة في قطاع حيوي تهدد استقرار البلاد. الحلول متاحة لكن كلها مكلفة.',
     'فضيحة تهز الحكومة والشعب يطالب بالمحاسبة. سمعتك على المحك.',
     'مشكلة اجتماعية متفاقمة تحتاج حلاً جذرياً. لكن كل حل له ثمنه.',
+    'تقارير مقلقة عن تدهور الأوضاع المعيشية. الناس ينزلون للشوارع.',
+    'أرقام صادمة تكشف حجم المعاناة. المسؤولون يتبادلون الاتهامات.',
   ],
   choiceTemplates: [
     [
@@ -104,6 +111,11 @@ const socialTemplates: DecisionTemplate = {
       { text: 'محاسبة صارمة وإصلاح', effects: { popularity: 20, economy: -5, treasury: -15 }, factionEffects: [{ factionId: 'intellectuals', supportChange: 15 }] },
       { text: 'لجنة تحقيق ووعود', effects: { popularity: -5 } },
       { text: 'التستر والإنكار', effects: { popularity: -25, diplomacy: -10 } },
+    ],
+    [
+      { text: 'خطة طوارئ وإنفاق ضخم', effects: { popularity: 20, treasury: -40, economy: 5 } },
+      { text: 'حلول مؤقتة وتسكينية', effects: { popularity: -5, treasury: -10 } },
+      { text: 'إلقاء المسؤولية على المحافظين', effects: { popularity: -10 }, factionEffects: [{ factionId: 'military_faction', supportChange: -5 }] },
     ],
   ],
 };

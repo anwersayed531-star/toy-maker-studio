@@ -113,6 +113,45 @@ export const storyDecisions: Decision[] = [
       { id: 'golden_age', text: 'مشروع نهضة شاملة قبل الرحيل', effects: { economy: 15, popularity: 15, treasury: -40, diplomacy: 10 }, factionEffects: [{ factionId: 'intellectuals', supportChange: 20 }, { factionId: 'labor', supportChange: 15 }] },
     ],
   },
+  // ===== NEW STORY DECISIONS =====
+  // Chapter 8 decisions
+  {
+    id: 'story_nuclear_deal',
+    title: 'الصفقة النووية',
+    description: 'د. ليلى تعلن جاهزية البرنامج النووي السلمي. لكن العالم يشك في نواياك. قرارك سيحدد مصير البلاد.',
+    category: 'diplomacy',
+    choices: [
+      { id: 'peaceful_nuclear', text: 'إعلان البرنامج النووي السلمي بشفافية', effects: { diplomacy: 20, economy: 10, popularity: 10 }, factionEffects: [{ factionId: 'intellectuals', supportChange: 25 }] },
+      { id: 'secret_weapons', text: 'تطوير سلاح نووي سراً', effects: { military: 30, diplomacy: -40, popularity: -10 }, factionEffects: [{ factionId: 'military_faction', supportChange: 25 }] },
+      { id: 'sell_technology', text: 'بيع التكنولوجيا النووية لدول أخرى', effects: { treasury: 60, diplomacy: -25, popularity: -15 } },
+      { id: 'abandon_nuclear', text: 'التخلي عن البرنامج النووي تماماً', effects: { diplomacy: 25, popularity: -10, military: -10 }, factionEffects: [{ factionId: 'intellectuals', supportChange: -15 }] },
+    ],
+  },
+  // Chapter 9 decisions
+  {
+    id: 'story_succession_crisis',
+    title: 'أزمة الخلافة',
+    description: 'تتدهور صحتك وتبدأ الأطراف بالتحرك للسيطرة. نائب الرئيس، الجنرال، وابنك كلهم يريدون الحكم.',
+    category: 'social',
+    choices: [
+      { id: 'open_elections', text: 'إعلان انتخابات حرة ونزيهة', effects: { popularity: 25, diplomacy: 25, military: -15 }, factionEffects: [{ factionId: 'intellectuals', supportChange: 30 }, { factionId: 'military_faction', supportChange: -20 }] },
+      { id: 'appoint_successor', text: 'تعيين خليفة من اختيارك', effects: { popularity: -10, military: 5 } },
+      { id: 'council_rule', text: 'تشكيل مجلس حكم انتقالي', effects: { popularity: 10, diplomacy: 15, military: -5 }, factionEffects: [{ factionId: 'intellectuals', supportChange: 15 }] },
+      { id: 'refuse_leave', text: 'رفض التنحي والبقاء بالقوة', effects: { popularity: -30, military: 15, diplomacy: -25 }, factionEffects: [{ factionId: 'military_faction', supportChange: 15 }] },
+    ],
+  },
+  // Chapter 10 decisions
+  {
+    id: 'story_golden_age',
+    title: 'العصر الذهبي',
+    description: 'بعد عقود من الحكم، أصبحت بلادك قوة إقليمية. كيف ستستخدم هذه القوة؟',
+    category: 'diplomacy',
+    choices: [
+      { id: 'regional_leader', text: 'قيادة تحالف إقليمي للسلام', effects: { diplomacy: 30, popularity: 15, economy: 10 }, factionEffects: [{ factionId: 'intellectuals', supportChange: 20 }] },
+      { id: 'expand_influence', text: 'توسيع النفوذ العسكري', effects: { military: 25, diplomacy: -15, treasury: -30 }, factionEffects: [{ factionId: 'military_faction', supportChange: 25 }] },
+      { id: 'welfare_state', text: 'بناء دولة رفاه نموذجية', effects: { popularity: 25, treasury: -40, economy: 10, diplomacy: 15 }, factionEffects: [{ factionId: 'labor', supportChange: 25 }] },
+    ],
+  },
 ];
 
 export const getStoryDecision = (chapterIndex: number, usedDecisions: string[]): Decision | null => {
@@ -124,6 +163,9 @@ export const getStoryDecision = (chapterIndex: number, usedDecisions: string[]):
     4: ['story_tribal_uprising'],
     5: ['story_foreign_invasion'],
     6: ['story_legacy_choice'],
+    7: ['story_nuclear_deal'],
+    8: ['story_succession_crisis'],
+    9: ['story_golden_age'],
   };
 
   const ids = chapterDecisions[chapterIndex] || [];
