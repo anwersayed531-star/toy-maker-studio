@@ -25,6 +25,7 @@ const eventTypeToCrisis = (event: RandomEvent): GameState['activeCrisis'] => {
   return {
     type: typeMap[event.type] || 'fire',
     severity: event.severity === 'low' ? 'medium' : event.severity as 'medium' | 'high' | 'critical',
+    id: `crisis_${event.id}_${Date.now()}`,
   };
 };
 
