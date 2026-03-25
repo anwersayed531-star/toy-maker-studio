@@ -1665,6 +1665,229 @@ export const decisions: Decision[] = [
       { id: 'resign_gracefully', text: 'الاستقالة وتسليم السلطة بكرامة', effects: { popularity: 30, diplomacy: 20 } },
     ],
   },
+  // ===== NEW DECISIONS BATCH 3 =====
+  {
+    id: 'cyber_warfare',
+    title: 'حرب إلكترونية',
+    description: 'هجوم إلكتروني ضخم يشل البنية التحتية الرقمية للبلاد! البنوك والمطارات تتوقف.',
+    category: 'military',
+    choices: [
+      { id: 'cyber_army', text: 'تأسيس جيش إلكتروني للرد', effects: { military: 15, treasury: -35, diplomacy: -10 }, factionEffects: [{ factionId: 'military_faction', supportChange: 15 }, { factionId: 'intellectuals', supportChange: 10 }] },
+      { id: 'seek_help', text: 'طلب مساعدة دولية للتصدي', effects: { diplomacy: 10, military: 5, treasury: -15 } },
+      { id: 'isolate_networks', text: 'عزل الشبكات وقطع الإنترنت مؤقتاً', effects: { economy: -20, popularity: -15, military: 5 } },
+    ],
+  },
+  {
+    id: 'space_program',
+    title: 'برنامج فضائي وطني',
+    description: 'العالمة د. ليلى تقترح إطلاق برنامج فضائي. مشروع طموح لكنه مكلف.',
+    category: 'diplomacy',
+    choices: [
+      { id: 'full_space', text: 'إطلاق برنامج فضائي شامل', effects: { diplomacy: 20, economy: 5, treasury: -60, popularity: 15 }, factionEffects: [{ factionId: 'intellectuals', supportChange: 30 }] },
+      { id: 'satellite_only', text: 'بدء ببرنامج أقمار صناعية فقط', effects: { diplomacy: 10, treasury: -25, economy: 5 }, factionEffects: [{ factionId: 'intellectuals', supportChange: 15 }] },
+      { id: 'reject_space', text: 'رفض المشروع والتركيز على الأولويات', effects: { popularity: -5 }, factionEffects: [{ factionId: 'intellectuals', supportChange: -15 }] },
+    ],
+  },
+  {
+    id: 'drug_cartel',
+    title: 'عصابات المخدرات',
+    description: 'اكتشاف شبكة مخدرات ضخمة تتغلغل في أجهزة الدولة! المافيا تهدد المسؤولين.',
+    category: 'military',
+    choices: [
+      { id: 'war_on_drugs', text: 'حرب شاملة على المخدرات', effects: { military: -10, popularity: 15, treasury: -30, diplomacy: 10 }, factionEffects: [{ factionId: 'military_faction', supportChange: 15 }, { factionId: 'religious', supportChange: 20 }] },
+      { id: 'legalize_regulate', text: 'تقنين وتنظيم بعض المواد', effects: { economy: 10, treasury: 15, popularity: -20, diplomacy: -10 }, factionEffects: [{ factionId: 'religious', supportChange: -25 }, { factionId: 'business', supportChange: 10 }] },
+      { id: 'negotiate_cartel', text: 'التفاوض سراً مع الشبكة', effects: { military: 5, popularity: -10 }, factionEffects: [{ factionId: 'intellectuals', supportChange: -20 }] },
+    ],
+  },
+  {
+    id: 'water_war',
+    title: 'حرب المياه',
+    description: 'دولة مجاورة تبني سداً يحرم بلادك من المياه! أزمة وجودية تهدد الزراعة والحياة.',
+    category: 'diplomacy',
+    choices: [
+      { id: 'military_threat', text: 'تهديد عسكري بتدمير السد', effects: { military: 10, diplomacy: -30, popularity: 10 }, factionEffects: [{ factionId: 'military_faction', supportChange: 20 }] },
+      { id: 'international_arbitration', text: 'التحكيم الدولي والضغط الدبلوماسي', effects: { diplomacy: 15, popularity: -5, treasury: -15 } },
+      { id: 'desalination', text: 'بناء محطات تحلية بديلة', effects: { treasury: -50, economy: 10, popularity: 5 }, factionEffects: [{ factionId: 'intellectuals', supportChange: 15 }] },
+    ],
+    followUpEvents: [
+      {
+        choiceId: 'military_threat',
+        delay: 3,
+        event: {
+          id: 'water_war_escalation',
+          title: 'تصعيد أزمة المياه',
+          description: 'الدولة المجاورة ترد بحشد عسكري على الحدود! التوتر يصل ذروته.',
+          category: 'military',
+          choices: [
+            { id: 'back_down', text: 'التراجع والعودة للدبلوماسية', effects: { popularity: -15, diplomacy: 10, military: -5 } },
+            { id: 'mobilize', text: 'التعبئة العامة والاستعداد للحرب', effects: { military: 15, treasury: -40, economy: -15 } },
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: 'gold_discovery',
+    title: 'اكتشاف منجم ذهب',
+    description: 'اكتشاف منجم ذهب ضخم في المنطقة الغربية! ثروة هائلة تنتظر الاستغلال.',
+    category: 'economy',
+    regionId: 'west',
+    choices: [
+      { id: 'state_mining', text: 'تعدين حكومي وطني', effects: { treasury: 50, economy: 15, popularity: 10 }, regionEffects: [{ regionId: 'west', effects: { economy: 25, development: 15, loyalty: 10 } }], factionEffects: [{ factionId: 'labor', supportChange: 15 }] },
+      { id: 'foreign_contract', text: 'عقود مع شركات أجنبية', effects: { treasury: 30, economy: 10, diplomacy: 10 }, regionEffects: [{ regionId: 'west', effects: { economy: 15, development: 10 } }], factionEffects: [{ factionId: 'business', supportChange: 20 }, { factionId: 'labor', supportChange: -10 }] },
+      { id: 'protect_environment', text: 'حماية البيئة ومنع التعدين', effects: { popularity: 5, diplomacy: 15 }, regionEffects: [{ regionId: 'west', effects: { loyalty: -10, unrest: 15 } }], factionEffects: [{ factionId: 'intellectuals', supportChange: 15 }] },
+    ],
+  },
+  {
+    id: 'child_labor_scandal',
+    title: 'فضيحة عمالة أطفال',
+    description: 'كشف شبكة واسعة لعمالة الأطفال في المصانع! المنظمات الدولية تطالب بتحرك فوري.',
+    category: 'social',
+    choices: [
+      { id: 'strict_crackdown', text: 'حملة صارمة وإغلاق المصانع المخالفة', effects: { economy: -15, popularity: 15, diplomacy: 15 }, factionEffects: [{ factionId: 'business', supportChange: -20 }, { factionId: 'intellectuals', supportChange: 25 }] },
+      { id: 'gradual_reform', text: 'إصلاح تدريجي مع دعم الأسر', effects: { treasury: -20, popularity: 10, economy: -5 } },
+      { id: 'deny_scale', text: 'إنكار حجم المشكلة', effects: { popularity: -15, diplomacy: -20 }, factionEffects: [{ factionId: 'business', supportChange: 10 }] },
+    ],
+  },
+  {
+    id: 'train_disaster',
+    title: 'كارثة قطار',
+    description: 'تصادم قطارين يخلف مئات الضحايا! البنية التحتية المتهالكة هي السبب.',
+    category: 'social',
+    choices: [
+      { id: 'rebuild_rails', text: 'إعادة بناء شبكة السكك الحديدية', effects: { treasury: -45, popularity: 15, economy: 10 } },
+      { id: 'blame_minister', text: 'إقالة وزير النقل ومحاكمته', effects: { popularity: 10, economy: -5 }, factionEffects: [{ factionId: 'intellectuals', supportChange: 15 }] },
+      { id: 'compensation_only', text: 'تعويض الضحايا فقط', effects: { treasury: -15, popularity: -10 } },
+    ],
+  },
+  {
+    id: 'ai_revolution',
+    title: 'ثورة الذكاء الاصطناعي',
+    description: 'تقنيات الذكاء الاصطناعي تهدد بإلغاء ملايين الوظائف! الشعب قلق من المستقبل.',
+    category: 'economy',
+    choices: [
+      { id: 'embrace_ai', text: 'تبني التقنية وتدريب العمال', effects: { economy: 15, treasury: -25, popularity: -5 }, factionEffects: [{ factionId: 'intellectuals', supportChange: 20 }, { factionId: 'labor', supportChange: -15 }] },
+      { id: 'regulate_ai', text: 'تنظيم وتقييد استخدام الذكاء الاصطناعي', effects: { economy: -5, popularity: 10, diplomacy: -5 }, factionEffects: [{ factionId: 'labor', supportChange: 10 }] },
+      { id: 'ban_ai', text: 'حظر الذكاء الاصطناعي في القطاعات الحساسة', effects: { economy: -10, popularity: 5, diplomacy: -15 }, factionEffects: [{ factionId: 'intellectuals', supportChange: -20 }, { factionId: 'labor', supportChange: 15 }] },
+    ],
+  },
+  {
+    id: 'cultural_heritage',
+    title: 'حماية التراث الثقافي',
+    description: 'مشروع بناء ضخم يهدد موقعاً أثرياً قديماً. المطورون يضغطون والعلماء يحتجون.',
+    category: 'social',
+    choices: [
+      { id: 'protect_heritage', text: 'حماية الموقع وإلغاء المشروع', effects: { economy: -10, popularity: 10, diplomacy: 10 }, factionEffects: [{ factionId: 'intellectuals', supportChange: 20 }, { factionId: 'business', supportChange: -15 }, { factionId: 'religious', supportChange: 10 }] },
+      { id: 'relocate_project', text: 'نقل المشروع لموقع بديل', effects: { treasury: -15, economy: 5, popularity: 5 } },
+      { id: 'demolish_site', text: 'هدم الموقع لصالح التنمية', effects: { economy: 15, treasury: 10, popularity: -15, diplomacy: -20 }, factionEffects: [{ factionId: 'business', supportChange: 20 }, { factionId: 'intellectuals', supportChange: -25 }] },
+    ],
+  },
+  {
+    id: 'prison_riot',
+    title: 'تمرد في السجون',
+    description: 'انتفاضة عنيفة في أكبر سجون البلاد! السجناء يحتجزون رهائن ويطالبون بإصلاحات.',
+    category: 'military',
+    choices: [
+      { id: 'storm_prison', text: 'اقتحام السجن بالقوة', effects: { military: 5, popularity: -15, diplomacy: -10 }, factionEffects: [{ factionId: 'military_faction', supportChange: 10 }] },
+      { id: 'negotiate_prisoners', text: 'التفاوض مع المتمردين', effects: { popularity: 5, military: -5 }, factionEffects: [{ factionId: 'intellectuals', supportChange: 10 }] },
+      { id: 'prison_reform', text: 'وعد بإصلاح السجون والعفو الجزئي', effects: { popularity: 10, treasury: -15, military: -5 }, factionEffects: [{ factionId: 'religious', supportChange: 10 }, { factionId: 'intellectuals', supportChange: 15 }] },
+    ],
+  },
+  {
+    id: 'brain_drain',
+    title: 'هجرة العقول',
+    description: 'آلاف العلماء والأطباء يغادرون البلاد بحثاً عن فرص أفضل! نزيف كفاءات خطير.',
+    category: 'social',
+    choices: [
+      { id: 'raise_salaries', text: 'مضاعفة رواتب الكفاءات', effects: { treasury: -35, economy: 10, popularity: 5 }, factionEffects: [{ factionId: 'intellectuals', supportChange: 25 }] },
+      { id: 'restrict_travel', text: 'تقييد سفر الكفاءات', effects: { popularity: -20, diplomacy: -15, military: 5 }, factionEffects: [{ factionId: 'intellectuals', supportChange: -30 }] },
+      { id: 'create_opportunities', text: 'إنشاء مراكز بحثية ومدن تقنية', effects: { treasury: -40, economy: 15, diplomacy: 10 }, factionEffects: [{ factionId: 'intellectuals', supportChange: 20 }, { factionId: 'business', supportChange: 10 }] },
+    ],
+  },
+  {
+    id: 'ethnic_tensions',
+    title: 'توترات عرقية',
+    description: 'اشتباكات عنيفة بين مجموعات عرقية مختلفة في الشرق! خطر انزلاق نحو حرب أهلية.',
+    category: 'regional',
+    regionId: 'east',
+    choices: [
+      { id: 'peace_committee', text: 'تشكيل لجنة مصالحة وطنية', effects: { popularity: 10, treasury: -15, diplomacy: 10 }, regionEffects: [{ regionId: 'east', effects: { unrest: -15, loyalty: 10 } }], factionEffects: [{ factionId: 'religious', supportChange: 10 }] },
+      { id: 'military_presence', text: 'نشر الجيش لفرض الأمن', effects: { military: -5, popularity: -10 }, regionEffects: [{ regionId: 'east', effects: { unrest: -10, loyalty: -15 } }], factionEffects: [{ factionId: 'military_faction', supportChange: 10 }] },
+      { id: 'autonomy_regions', text: 'منح حكم ذاتي لكل مجموعة', effects: { popularity: -5, diplomacy: 5 }, regionEffects: [{ regionId: 'east', effects: { unrest: -20, loyalty: 15 } }], factionEffects: [{ factionId: 'military_faction', supportChange: -15 }] },
+    ],
+  },
+  {
+    id: 'volcano_eruption',
+    title: 'ثوران بركاني',
+    description: 'بركان خامد يثور فجأة! سحب الرماد تغطي مناطق واسعة والمحاصيل مهددة.',
+    category: 'social',
+    choices: [
+      { id: 'mass_evacuation', text: 'إجلاء جماعي وإعلان كارثة وطنية', effects: { treasury: -40, popularity: 15, economy: -15 }, regionEffects: [{ regionId: 'north', effects: { economy: -20, loyalty: 15, unrest: -10 } }] },
+      { id: 'partial_evacuation', text: 'إجلاء جزئي للمناطق الأقرب', effects: { treasury: -20, popularity: -5 }, regionEffects: [{ regionId: 'north', effects: { economy: -10, unrest: 15 } }] },
+      { id: 'international_aid_volcano', text: 'طلب مساعدات دولية عاجلة', effects: { diplomacy: 10, treasury: -10 }, regionEffects: [{ regionId: 'north', effects: { loyalty: 5 } }] },
+    ],
+  },
+  {
+    id: 'media_monopoly',
+    title: 'احتكار الإعلام',
+    description: 'رجل الأعمال حسن الثري يسيطر على 80% من وسائل الإعلام! حرية التعبير مهددة.',
+    category: 'social',
+    choices: [
+      { id: 'break_monopoly', text: 'تفكيك الاحتكار بقوة القانون', effects: { popularity: 15, economy: -5, diplomacy: 10 }, factionEffects: [{ factionId: 'business', supportChange: -25 }, { factionId: 'intellectuals', supportChange: 25 }] },
+      { id: 'state_media', text: 'إنشاء إعلام حكومي منافس', effects: { treasury: -20, popularity: -5 }, factionEffects: [{ factionId: 'intellectuals', supportChange: -10 }] },
+      { id: 'let_market_media', text: 'ترك السوق يتنظم بنفسه', effects: { popularity: -10 }, factionEffects: [{ factionId: 'business', supportChange: 15 }] },
+    ],
+  },
+  {
+    id: 'food_crisis',
+    title: 'أزمة غذائية حادة',
+    description: 'نقص حاد في الغذاء يضرب البلاد! طوابير طويلة أمام المخابز والمتاجر فارغة.',
+    category: 'economy',
+    choices: [
+      { id: 'emergency_imports', text: 'استيراد طوارئ ودعم الأسعار', effects: { treasury: -40, popularity: 10, diplomacy: 5 }, factionEffects: [{ factionId: 'labor', supportChange: 15 }] },
+      { id: 'ration_cards', text: 'نظام بطاقات تموين', effects: { treasury: -15, popularity: -5 } },
+      { id: 'open_reserves', text: 'فتح المخزون الاستراتيجي', effects: { treasury: -5, popularity: 5, economy: -10 } },
+    ],
+    followUpEvents: [
+      {
+        choiceId: 'ration_cards',
+        delay: 2,
+        event: {
+          id: 'ration_corruption',
+          title: 'فساد في التموين',
+          description: 'اكتشاف سرقة بطاقات التموين وبيعها في السوق السوداء! الشعب غاضب.',
+          category: 'social',
+          choices: [
+            { id: 'punish_corrupt', text: 'اعتقال المتورطين ومحاكمتهم', effects: { popularity: 10, economy: -5 } },
+            { id: 'digital_system', text: 'تحويل النظام لإلكتروني', effects: { treasury: -15, economy: 5, popularity: 5 } },
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: 'military_modernization',
+    title: 'تحديث الجيش',
+    description: 'الجنرال طارق يطالب بتحديث شامل للمعدات العسكرية. الجيش يعمل بأسلحة قديمة.',
+    category: 'military',
+    choices: [
+      { id: 'full_modernization', text: 'تحديث شامل بأحدث الأسلحة', effects: { military: 25, treasury: -60, diplomacy: -5 }, factionEffects: [{ factionId: 'military_faction', supportChange: 30 }] },
+      { id: 'selective_upgrade', text: 'تحديث انتقائي للأسلحة الأهم', effects: { military: 15, treasury: -30 }, factionEffects: [{ factionId: 'military_faction', supportChange: 15 }] },
+      { id: 'focus_training', text: 'التركيز على التدريب بدل المعدات', effects: { military: 10, treasury: -10 }, factionEffects: [{ factionId: 'military_faction', supportChange: 5 }] },
+      { id: 'defense_industry', text: 'إنشاء صناعة دفاعية محلية', effects: { military: 5, economy: 10, treasury: -45 }, factionEffects: [{ factionId: 'military_faction', supportChange: 10 }, { factionId: 'business', supportChange: 15 }] },
+    ],
+  },
+  {
+    id: 'climate_disaster',
+    title: 'كارثة مناخية',
+    description: 'ارتفاع درجات الحرارة يسبب جفافاً وحرائق غابات! التغير المناخي يضرب بقوة.',
+    category: 'social',
+    choices: [
+      { id: 'green_plan', text: 'خطة خضراء شاملة لمواجهة المناخ', effects: { treasury: -35, economy: 5, diplomacy: 20, popularity: 10 }, factionEffects: [{ factionId: 'intellectuals', supportChange: 20 }] },
+      { id: 'emergency_water', text: 'إجراءات طوارئ للمياه والغذاء', effects: { treasury: -20, popularity: 5 } },
+      { id: 'deny_climate', text: 'إنكار التغير المناخي والتركيز على الاقتصاد', effects: { economy: 5, diplomacy: -15, popularity: -10 }, factionEffects: [{ factionId: 'intellectuals', supportChange: -20 }] },
+    ],
+  },
 ];
 
 export const getRandomDecision = (usedDecisions: string[]): Decision | null => {
