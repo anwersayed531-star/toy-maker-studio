@@ -12,15 +12,9 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { getGameOverTranslation } from '@/i18n/gameOverTranslations';
 import { getRegionName } from '@/i18n/entityTranslations';
 
-// Map random event types to crisis animation types
 const eventTypeToCrisis = (event: RandomEvent): GameState['activeCrisis'] => {
   const typeMap: Record<string, 'earthquake' | 'war' | 'coup' | 'epidemic' | 'economic' | 'fire'> = {
-    disaster: 'earthquake',
-    war: 'war',
-    epidemic: 'epidemic',
-    political: 'coup',
-    economic: 'economic',
-    social: 'fire',
+    disaster: 'earthquake', war: 'war', epidemic: 'epidemic', political: 'coup', economic: 'economic', social: 'fire',
   };
   return {
     type: typeMap[event.type] || 'fire',
@@ -29,7 +23,6 @@ const eventTypeToCrisis = (event: RandomEvent): GameState['activeCrisis'] => {
   };
 };
 
-// Turn goal templates
 const turnGoalTemplates: Omit<TurnGoal, 'id' | 'turnsRemaining'>[] = [
   { description: 'حافظ على الاقتصاد فوق 40', type: 'maintain_stat', targetStat: 'economy', targetValue: 40, reward: { treasury: 20, economy: 5 }, penalty: { economy: -10, popularity: -5 } },
   { description: 'حافظ على الشعبية فوق 50', type: 'maintain_stat', targetStat: 'popularity', targetValue: 50, reward: { popularity: 10, treasury: 15 }, penalty: { popularity: -15 } },
@@ -44,7 +37,6 @@ const turnGoalTemplates: Omit<TurnGoal, 'id' | 'turnsRemaining'>[] = [
 ];
 
 function generateTurnGoal(state: GameState): TurnGoal {
-  // Pick a contextual goal - prefer goals for struggling areas
   const candidates = turnGoalTemplates.filter(g => {
     if (g.type === 'maintain_stat' && g.targetStat) {
       const val = (state as any)[g.targetStat];
@@ -60,7 +52,6 @@ function generateTurnGoal(state: GameState): TurnGoal {
 function checkTurnGoal(state: GameState): { completed: boolean } {
   const goal = state.turnGoal;
   if (!goal) return { completed: false };
-  
   switch (goal.type) {
     case 'maintain_stat':
     case 'increase_stat': {
@@ -95,7 +86,6 @@ export const useGameLogic = () => {
   const { scheduleReminder, cancelReminder } = useNotifications();
   const { currentLanguage } = useLanguage();
 
-  // Auto-save hook
   useAutoSave(gameStarted, gameState, usedDecisions, currentDecision);
 
   const checkVictory = useCallback((state: GameState): GameState => {
@@ -109,7 +99,6 @@ export const useGameLogic = () => {
       }
       return { ...condition, currentValue, completed: currentValue >= condition.targetValue };
     });
-
     const completedCondition = updatedConditions.find(c => c.completed);
     if (completedCondition) {
       return { ...state, victoryConditions: updatedConditions, gameWon: true, victoryType: completedCondition.name };
@@ -119,7 +108,6 @@ export const useGameLogic = () => {
 
   const checkGameOver = useCallback((state: GameState): GameState => {
     if (state.gameWon) return state;
-
     const t = getGameOverTranslation(currentLanguage);
     let gameOverReason: string | undefined;
 
@@ -129,6 +117,10 @@ export const useGameLogic = () => {
     else if (state.diplomacy <= 0) gameOverReason = t.internationalIsolation;
     else if (state.treasury <= (state.difficulty === 'easy' ? -50 : state.difficulty === 'hard' ? -15 : -30))
       gameOverReason = t.totalBankruptcy;
+    
+    // Food/energy crisis
+    if (state.food <= 0) gameOverReason = currentLanguage === 'ar' ? '🍞 مجاعة شاملة - الشعب يموت جوعاً!' : 'Famine - the people are starving!';
+    if (state.energy <= 0) gameOverReason = currentLanguage === 'ar' ? '⚡ انهيار شبكة الطاقة - البلاد في ظلام تام!' : 'Total energy grid collapse!';
 
     const militaryFaction = state.factions.find(f => f.id === 'military_faction');
     if (militaryFaction && militaryFaction.support <= (state.difficulty === 'easy' ? 10 : state.difficulty === 'hard' ? 25 : 15))
@@ -140,11 +132,8 @@ export const useGameLogic = () => {
       gameOverReason = t.regionRebellion(regionName);
     }
 
-    // Cascading crisis - if multiple stats are very low
     const criticalStats = [state.economy, state.military, state.popularity, state.diplomacy].filter(s => s <= 15);
-    if (criticalStats.length >= 3) {
-      gameOverReason = t.economyCollapse;
-    }
+    if (criticalStats.length >= 3) gameOverReason = t.economyCollapse;
 
     if (gameOverReason) return { ...state, gameOver: true, gameOverReason };
     return state;
@@ -154,7 +143,6 @@ export const useGameLogic = () => {
     const updatedEvents = state.pendingEvents.map(event => ({
       ...event, turnsUntilTrigger: event.turnsUntilTrigger - 1,
     }));
-
     const eventToTrigger = updatedEvents.find(e => e.turnsUntilTrigger <= 0 && !e.triggered);
     if (eventToTrigger) {
       return {
@@ -170,7 +158,6 @@ export const useGameLogic = () => {
       .map(c => ({ ...c, turnsRemaining: c.turnsRemaining - 1 }))
       .filter(c => c.turnsRemaining > 0);
 
-    // Increase probability when stats are low (cascading crises)
     const crisisBonus = [state.economy, state.military, state.popularity, state.diplomacy]
       .filter(s => s < 20).length * 3;
 
@@ -192,11 +179,9 @@ export const useGameLogic = () => {
     return { state: { ...state, eventCooldowns: updatedCooldowns }, randomEvent: null };
   }, []);
 
-  // Update story chapters
   const updateStory = useCallback((state: GameState): GameState => {
     const chapters = [...state.storyChapters];
     let newChapter = state.currentChapter;
-
     for (let i = 0; i < chapters.length; i++) {
       if (chapters[i].completed) continue;
       const cond = chapters[i].unlockCondition;
@@ -207,46 +192,103 @@ export const useGameLogic = () => {
         }
       }
     }
-
     return { ...state, storyChapters: chapters, currentChapter: newChapter };
   }, []);
 
-  // Process turn goals
   const processTurnGoals = useCallback((state: GameState): GameState => {
     let newState = { ...state };
-    
     if (newState.turnGoal) {
-      // Decrement turns remaining
       const goal = { ...newState.turnGoal, turnsRemaining: newState.turnGoal.turnsRemaining - 1 };
       newState.turnGoal = goal;
-      
       if (goal.turnsRemaining <= 0) {
         const { completed } = checkTurnGoal(newState);
         if (completed) {
-          // Apply reward
           Object.entries(goal.reward).forEach(([stat, value]) => {
-            if (value !== undefined) {
-              (newState as any)[stat] = Math.max(0, Math.min(100, ((newState as any)[stat] || 0) + value));
-            }
+            if (value !== undefined) (newState as any)[stat] = Math.max(0, Math.min(100, ((newState as any)[stat] || 0) + value));
           });
           newState.turnGoalCompleted = true;
         } else {
-          // Apply penalty
           Object.entries(goal.penalty).forEach(([stat, value]) => {
-            if (value !== undefined) {
-              (newState as any)[stat] = Math.max(0, Math.min(100, ((newState as any)[stat] || 0) + value));
-            }
+            if (value !== undefined) (newState as any)[stat] = Math.max(0, Math.min(100, ((newState as any)[stat] || 0) + value));
           });
           newState.turnGoalCompleted = false;
         }
-        // Generate new goal after a few turns
         newState.turnGoal = undefined;
       }
     } else if (state.turnCount > 0 && state.turnCount % 4 === 0) {
-      // Generate new goal every 4 turns
       newState.turnGoal = generateTurnGoal(state);
     }
+    return newState;
+  }, []);
+
+  // Process building bonuses and resources
+  const processResources = useCallback((state: GameState): GameState => {
+    let foodProduction = 0;
+    let energyProduction = 0;
+    let foodConsumption = state.population * 0.8;
+    let energyConsumption = state.population * 0.6;
+
+    const updatedRegions = state.regions.map(region => {
+      let regionFood = 0;
+      let regionEnergy = 0;
+
+      // Resource-based production
+      if (region.resources.includes('agriculture')) regionFood += 8;
+      if (region.resources.includes('oil')) regionEnergy += 10;
+      if (region.resources.includes('industry')) regionEnergy += 4;
+
+      // Building bonuses
+      region.buildings.forEach(b => {
+        switch (b.type) {
+          case 'farm': regionFood += 6 * b.level; break;
+          case 'power_plant': regionEnergy += 8 * b.level; break;
+          case 'factory': 
+            // factories boost regional economy
+            break;
+          case 'hospital': break;
+          case 'university': break;
+          case 'military_base': break;
+        }
+      });
+
+      foodProduction += regionFood;
+      energyProduction += regionEnergy;
+
+      // Building passive effects on region
+      let econBonus = 0;
+      let devBonus = 0;
+      region.buildings.forEach(b => {
+        if (b.type === 'factory') { econBonus += 2 * b.level; }
+        if (b.type === 'university') { devBonus += 2 * b.level; }
+        if (b.type === 'hospital') { devBonus += 1 * b.level; }
+      });
+
+      return {
+        ...region,
+        economy: Math.min(100, region.economy + econBonus * 0.3),
+        development: Math.min(100, region.development + devBonus * 0.3),
+        food: Math.max(0, Math.min(100, region.food + regionFood - region.population * 1.5)),
+        energy: Math.max(0, Math.min(100, region.energy + regionEnergy - region.population * 1.2)),
+      };
+    });
+
+    const netFood = foodProduction - foodConsumption;
+    const netEnergy = energyProduction - energyConsumption;
+
+    let newFood = Math.max(0, Math.min(100, state.food + netFood * 0.5));
+    let newEnergy = Math.max(0, Math.min(100, state.energy + netEnergy * 0.5));
+
+    // Resource crises
+    let newState = { ...state, regions: updatedRegions, food: newFood, energy: newEnergy };
     
+    if (newFood < 20) {
+      newState.popularity = Math.max(0, newState.popularity - 3);
+      newState.activeCrisis = newFood < 10 ? { type: 'fire', severity: 'high', id: `famine_${Date.now()}` } : undefined;
+    }
+    if (newEnergy < 20) {
+      newState.economy = Math.max(0, newState.economy - 2);
+    }
+
     return newState;
   }, []);
 
@@ -291,7 +333,6 @@ export const useGameLogic = () => {
       treasury: mod.decay.treasury,
     };
 
-    // Update character loyalty based on game state
     const updatedCharacters = state.characters.map(char => {
       if (char.status !== 'alive') return char;
       let loyaltyChange = 0;
@@ -318,6 +359,35 @@ export const useGameLogic = () => {
     playSound('click');
   }, [playSound]);
 
+  // Faction interactions
+  const handleFactionAction = useCallback((factionId: string, action: 'ally' | 'bribe' | 'threaten') => {
+    setGameState(prev => {
+      const factions = prev.factions.map(f => {
+        if (f.id !== factionId) return f;
+        switch (action) {
+          case 'ally':
+            return { ...f, support: Math.min(100, f.support + 8), demands: undefined };
+          case 'bribe':
+            return { ...f, support: Math.min(100, f.support + 15) };
+          case 'threaten':
+            // Risky: can gain or lose
+            const change = Math.random() > 0.4 ? 10 : -20;
+            return { ...f, support: Math.max(0, Math.min(100, f.support + change)) };
+        }
+      });
+      
+      let treasury = prev.treasury;
+      if (action === 'bribe') treasury -= 10;
+      if (action === 'ally') treasury -= 3;
+      
+      let popularity = prev.popularity;
+      if (action === 'threaten') popularity = Math.max(0, popularity - 3);
+      
+      return { ...prev, factions, treasury, popularity };
+    });
+    playSound('decision');
+  }, [playSound]);
+
   const handleSaveGame = useCallback(() => {
     const success = saveGame(gameState, usedDecisions, currentDecision);
     if (success) playSound('success');
@@ -327,7 +397,20 @@ export const useGameLogic = () => {
   const handleLoadGame = useCallback(() => {
     const saved = loadGame() || loadAutoSave();
     if (saved) {
-      setGameState(saved.gameState);
+      // Ensure backward compatibility with food/energy
+      const loadedState = {
+        ...initialGameState,
+        ...saved.gameState,
+        food: saved.gameState.food ?? 60,
+        energy: saved.gameState.energy ?? 55,
+        regions: saved.gameState.regions?.map((r: any) => ({
+          ...r,
+          buildings: r.buildings ?? [],
+          food: r.food ?? 50,
+          energy: r.energy ?? 50,
+        })) ?? initialGameState.regions,
+      };
+      setGameState(loadedState);
       setUsedDecisions(saved.usedDecisions);
       setGameStarted(true);
       if (saved.currentDecisionId) {
@@ -342,23 +425,18 @@ export const useGameLogic = () => {
   }, [loadGame, playSound, cancelReminder]);
 
   const getNextDecision = useCallback((usedIds: string[], state: GameState): Decision | null => {
-    // 1. Try story decision first
     const storyDec = getStoryDecision(state.currentChapter, usedIds);
     if (storyDec) return storyDec;
-    
-    // 2. Try regular decisions
     const regularDec = getRandomDecision(usedIds);
     if (regularDec) return regularDec;
-    
-    // 3. Generate procedural content
     return generateDecision(state);
   }, []);
 
   const startGame = useCallback((presidentName: string, countryName: string, difficulty: DifficultyLevel = 'medium') => {
     const diffStats: Record<DifficultyLevel, Partial<GameState>> = {
-      easy: { economy: 55, military: 55, popularity: 55, diplomacy: 55, treasury: 100 },
-      medium: { economy: 40, military: 40, popularity: 42, diplomacy: 40, treasury: 65 },
-      hard: { economy: 22, military: 22, popularity: 25, diplomacy: 22, treasury: 30 },
+      easy: { economy: 55, military: 55, popularity: 55, diplomacy: 55, treasury: 100, food: 75, energy: 70 },
+      medium: { economy: 40, military: 40, popularity: 42, diplomacy: 40, treasury: 65, food: 60, energy: 55 },
+      hard: { economy: 22, military: 22, popularity: 25, diplomacy: 22, treasury: 30, food: 40, energy: 35 },
     };
     const newState: GameState = {
       ...initialGameState,
@@ -380,7 +458,6 @@ export const useGameLogic = () => {
 
   const makeChoice = useCallback((choice: Choice) => {
     if (!currentDecision) return;
-
     playSound('decision');
 
     const effects: { stat: string; value: number }[] = [];
@@ -449,6 +526,7 @@ export const useGameLogic = () => {
     setUsedDecisions(newUsedDecisions);
 
     let updatedState = advanceTime(newState);
+    updatedState = processResources(updatedState);
     updatedState = updateStory(updatedState);
     updatedState = processTurnGoals(updatedState);
     const { state: stateAfterEvents, triggeredEvent } = processFollowUpEvents(updatedState);
@@ -456,6 +534,20 @@ export const useGameLogic = () => {
 
     const { state: stateAfterRandom, randomEvent } = processRandomEvents(updatedState);
     updatedState = stateAfterRandom;
+
+    // Clear turnGoalCompleted after showing
+    if (updatedState.turnGoalCompleted !== undefined) {
+      setTimeout(() => {
+        setGameState(prev => ({ ...prev, turnGoalCompleted: undefined }));
+      }, 3000);
+    }
+
+    // Clear activeCrisis after animation
+    if (updatedState.activeCrisis) {
+      setTimeout(() => {
+        setGameState(prev => ({ ...prev, activeCrisis: undefined }));
+      }, 4000);
+    }
 
     updatedState = checkVictory(updatedState);
     updatedState = checkGameOver(updatedState);
@@ -474,13 +566,11 @@ export const useGameLogic = () => {
 
     setTimeout(() => {
       setShowEffects(false);
-      
       if (!updatedState.gameOver && !updatedState.gameWon) {
         if (randomEvent) {
           setCurrentRandomEvent(randomEvent);
           setShowRandomEventNotification(true);
           playSound('warning');
-          
           setTimeout(() => {
             setShowRandomEventNotification(false);
             setCurrentDecision(randomEvent);
@@ -493,7 +583,7 @@ export const useGameLogic = () => {
         }
       }
     }, 2000);
-  }, [currentDecision, gameState, usedDecisions, advanceTime, updateStory, processTurnGoals, checkGameOver, checkVictory, processFollowUpEvents, processRandomEvents, playSound, updateStats, deleteSave, getNextDecision]);
+  }, [currentDecision, gameState, usedDecisions, advanceTime, processResources, updateStory, processTurnGoals, checkGameOver, checkVictory, processFollowUpEvents, processRandomEvents, playSound, updateStats, deleteSave, getNextDecision]);
 
   const restartGame = useCallback(() => {
     setGameState(initialGameState);
@@ -530,6 +620,7 @@ export const useGameLogic = () => {
     handleSaveGame,
     handleLoadGame,
     handleToggleSound,
+    handleFactionAction,
     hasSavedGame: hasSavedGame() || hasAutoSave(),
     getSaveInfo,
     getStats,
