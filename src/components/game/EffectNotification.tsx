@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface Effect {
   stat: string;
@@ -12,15 +13,21 @@ interface EffectNotificationProps {
   isVisible: boolean;
 }
 
-const statLabels: Record<string, string> = {
-  economy: 'الاقتصاد',
-  military: 'الجيش',
-  popularity: 'الشعبية',
-  diplomacy: 'الدبلوماسية',
-  treasury: 'الخزينة',
-};
-
 export const EffectNotification = ({ effects, isVisible }: EffectNotificationProps) => {
+  const { t } = useLanguage();
+
+  const getStatLabel = (stat: string) => {
+    const map: Record<string, keyof ReturnType<typeof t extends (k: infer K) => any ? never : never>> = {};
+    switch (stat) {
+      case 'economy': return t('economy');
+      case 'military': return t('military');
+      case 'popularity': return t('popularity');
+      case 'diplomacy': return t('diplomacy');
+      case 'treasury': return t('treasury');
+      default: return stat;
+    }
+  };
+
   return (
     <AnimatePresence>
       {isVisible && (
@@ -33,10 +40,10 @@ export const EffectNotification = ({ effects, isVisible }: EffectNotificationPro
           <motion.div
             initial={{ y: 50 }}
             animate={{ y: 0 }}
-            className="bg-card border border-border rounded-xl p-8 max-w-sm w-full mx-4"
+            className="bg-card border border-border rounded-xl p-8 max-w-sm w-full mx-4 shadow-2xl"
           >
             <h3 className="text-xl font-bold text-center text-foreground mb-6">
-              نتائج القرار
+              📊 {t('decision')}
             </h3>
             <div className="space-y-4">
               {effects.map((effect, index) => (
@@ -45,10 +52,13 @@ export const EffectNotification = ({ effects, isVisible }: EffectNotificationPro
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.15 }}
-                  className="flex items-center justify-between"
+                  className={cn(
+                    "flex items-center justify-between p-2 rounded-lg",
+                    effect.value > 0 ? "bg-success/10" : effect.value < 0 ? "bg-destructive/10" : "bg-muted/30"
+                  )}
                 >
-                  <span className="text-muted-foreground">
-                    {statLabels[effect.stat] || effect.stat}
+                  <span className="text-muted-foreground text-sm">
+                    {getStatLabel(effect.stat)}
                   </span>
                   <div className={cn(
                     "flex items-center gap-1 font-bold",
@@ -63,7 +73,7 @@ export const EffectNotification = ({ effects, isVisible }: EffectNotificationPro
                     )}
                     <span>
                       {effect.value > 0 ? '+' : ''}{effect.value}
-                      {effect.stat !== 'treasury' ? '%' : ' مليار'}
+                      {effect.stat !== 'treasury' ? '%' : 'B'}
                     </span>
                   </div>
                 </motion.div>

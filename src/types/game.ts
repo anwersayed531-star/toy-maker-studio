@@ -1,3 +1,10 @@
+export interface Building {
+  id: string;
+  type: 'factory' | 'hospital' | 'military_base' | 'university' | 'power_plant' | 'farm';
+  level: number;
+  regionId: string;
+}
+
 export interface Region {
   id: string;
   name: string;
@@ -8,6 +15,9 @@ export interface Region {
   unrest: number;
   governor?: string;
   resources: ('oil' | 'agriculture' | 'industry' | 'tourism' | 'mining')[];
+  buildings: Building[];
+  food: number;
+  energy: number;
 }
 
 export interface Advisor {
@@ -64,15 +74,22 @@ export interface TurnGoal {
 
 export type CharacterStatus = 'alive' | 'imprisoned' | 'exiled' | 'dead';
 
+export interface CharacterRelation {
+  targetId: string;
+  type: 'ally' | 'rival' | 'neutral';
+  strength: number; // 0-100
+}
+
 export interface Character {
   id: string;
   name: string;
   role: string;
-  loyalty: number; // 0-100
-  skill: number; // 0-100
+  loyalty: number;
+  skill: number;
   status: CharacterStatus;
   description: string;
   portraitEmoji: string;
+  relations?: CharacterRelation[];
 }
 
 export interface StoryChapter {
@@ -85,7 +102,7 @@ export interface StoryChapter {
     stat?: string;
   };
   completed: boolean;
-  decisions?: string[]; // decision IDs linked to this chapter
+  decisions?: string[];
 }
 
 export interface GameState {
@@ -104,6 +121,8 @@ export interface GameState {
   // Resources
   treasury: number;
   population: number;
+  food: number;
+  energy: number;
   
   // Regions
   regions: Region[];
@@ -136,7 +155,7 @@ export interface GameState {
   activeCrisis?: {
     type: 'earthquake' | 'war' | 'coup' | 'epidemic' | 'economic' | 'fire';
     severity: 'medium' | 'high' | 'critical';
-    id: string; // unique id to prevent re-triggering
+    id: string;
   };
   
   // Turn Goals
@@ -167,6 +186,7 @@ export interface Choice {
   id: string;
   text: string;
   effects: Partial<Pick<GameState, 'economy' | 'military' | 'popularity' | 'diplomacy' | 'treasury'>>;
+  hint?: 'positive' | 'negative' | 'mixed' | 'risky';
   regionEffects?: {
     regionId: string;
     effects: Partial<Pick<Region, 'economy' | 'loyalty' | 'development' | 'unrest'>>;
@@ -185,12 +205,12 @@ export interface NewsEvent {
 }
 
 const initialRegions: Region[] = [
-  { id: 'capital', name: 'العاصمة', population: 8, economy: 70, loyalty: 60, development: 80, unrest: 20, resources: ['industry', 'tourism'] },
-  { id: 'north', name: 'الشمال', population: 5, economy: 50, loyalty: 70, development: 50, unrest: 15, resources: ['agriculture', 'industry'] },
-  { id: 'south', name: 'الجنوب', population: 4, economy: 40, loyalty: 50, development: 35, unrest: 30, resources: ['oil', 'mining'] },
-  { id: 'east', name: 'الشرق', population: 3, economy: 55, loyalty: 65, development: 45, unrest: 20, resources: ['agriculture', 'tourism'] },
-  { id: 'west', name: 'الغرب', population: 4, economy: 45, loyalty: 55, development: 40, unrest: 25, resources: ['mining', 'agriculture'] },
-  { id: 'coast', name: 'الساحل', population: 6, economy: 65, loyalty: 60, development: 60, unrest: 15, resources: ['tourism', 'industry'] },
+  { id: 'capital', name: 'العاصمة', population: 8, economy: 70, loyalty: 60, development: 80, unrest: 20, resources: ['industry', 'tourism'], buildings: [], food: 60, energy: 70 },
+  { id: 'north', name: 'الشمال', population: 5, economy: 50, loyalty: 70, development: 50, unrest: 15, resources: ['agriculture', 'industry'], buildings: [], food: 80, energy: 40 },
+  { id: 'south', name: 'الجنوب', population: 4, economy: 40, loyalty: 50, development: 35, unrest: 30, resources: ['oil', 'mining'], buildings: [], food: 30, energy: 90 },
+  { id: 'east', name: 'الشرق', population: 3, economy: 55, loyalty: 65, development: 45, unrest: 20, resources: ['agriculture', 'tourism'], buildings: [], food: 70, energy: 35 },
+  { id: 'west', name: 'الغرب', population: 4, economy: 45, loyalty: 55, development: 40, unrest: 25, resources: ['mining', 'agriculture'], buildings: [], food: 60, energy: 50 },
+  { id: 'coast', name: 'الساحل', population: 6, economy: 65, loyalty: 60, development: 60, unrest: 15, resources: ['tourism', 'industry'], buildings: [], food: 50, energy: 55 },
 ];
 
 const initialAdvisors: Advisor[] = [
@@ -216,27 +236,27 @@ const initialVictoryConditions: VictoryCondition[] = [
 ];
 
 const initialCharacters: Character[] = [
-  { id: 'vice_president', name: 'نائب الرئيس - عادل المنصور', role: 'نائب الرئيس', loyalty: 65, skill: 70, status: 'alive', description: 'سياسي محنك يطمح للرئاسة سراً', portraitEmoji: '🎩' },
-  { id: 'intelligence_chief', name: 'رئيس المخابرات - اللواء سالم', role: 'رئيس المخابرات', loyalty: 75, skill: 85, status: 'alive', description: 'يعرف أسرار الجميع ولا يثق بأحد', portraitEmoji: '🕶️' },
-  { id: 'opposition_leader', name: 'قائد المعارضة - كمال الدين', role: 'زعيم المعارضة', loyalty: 15, skill: 80, status: 'alive', description: 'خطيب مفوّه يحرك الشارع بكلماته', portraitEmoji: '📢' },
-  { id: 'tycoon', name: 'رجل الأعمال - حسن الثري', role: 'رجل أعمال', loyalty: 50, skill: 90, status: 'alive', description: 'يملك نصف اقتصاد البلاد ويريد النصف الآخر', portraitEmoji: '💰' },
-  { id: 'tribal_chief', name: 'الشيخ عبدالله - زعيم القبائل', role: 'زعيم قبلي', loyalty: 55, skill: 60, status: 'alive', description: 'يتحكم في الجنوب ويمسك بتوازن القبائل', portraitEmoji: '⚔️' },
-  { id: 'nuclear_scientist', name: 'د. ليلى العلمية', role: 'عالمة نووية', loyalty: 80, skill: 95, status: 'alive', description: 'عبقرية في الفيزياء النووية وحلم البرنامج النووي', portraitEmoji: '🔬' },
-  { id: 'journalist', name: 'الصحفي - يوسف الحقيقة', role: 'صحفي شهير', loyalty: 30, skill: 75, status: 'alive', description: 'يكشف الفساد ولا يخشى أحداً', portraitEmoji: '📰' },
-  { id: 'general', name: 'الجنرال - طارق الحديد', role: 'قائد الجيش', loyalty: 70, skill: 85, status: 'alive', description: 'بطل حرب سابق يحظى بولاء الجنود', portraitEmoji: '🎖️' },
+  { id: 'vice_president', name: 'نائب الرئيس - عادل المنصور', role: 'نائب الرئيس', loyalty: 65, skill: 70, status: 'alive', description: 'سياسي محنك يطمح للرئاسة سراً', portraitEmoji: '🎩', relations: [{ targetId: 'intelligence_chief', type: 'rival', strength: 60 }, { targetId: 'tycoon', type: 'ally', strength: 70 }] },
+  { id: 'intelligence_chief', name: 'رئيس المخابرات - اللواء سالم', role: 'رئيس المخابرات', loyalty: 75, skill: 85, status: 'alive', description: 'يعرف أسرار الجميع ولا يثق بأحد', portraitEmoji: '🕶️', relations: [{ targetId: 'vice_president', type: 'rival', strength: 60 }, { targetId: 'general', type: 'ally', strength: 80 }] },
+  { id: 'opposition_leader', name: 'قائد المعارضة - كمال الدين', role: 'زعيم المعارضة', loyalty: 15, skill: 80, status: 'alive', description: 'خطيب مفوّه يحرك الشارع بكلماته', portraitEmoji: '📢', relations: [{ targetId: 'journalist', type: 'ally', strength: 90 }, { targetId: 'intelligence_chief', type: 'rival', strength: 85 }] },
+  { id: 'tycoon', name: 'رجل الأعمال - حسن الثري', role: 'رجل أعمال', loyalty: 50, skill: 90, status: 'alive', description: 'يملك نصف اقتصاد البلاد ويريد النصف الآخر', portraitEmoji: '💰', relations: [{ targetId: 'vice_president', type: 'ally', strength: 70 }, { targetId: 'labor', type: 'rival', strength: 75 }] },
+  { id: 'tribal_chief', name: 'الشيخ عبدالله - زعيم القبائل', role: 'زعيم قبلي', loyalty: 55, skill: 60, status: 'alive', description: 'يتحكم في الجنوب ويمسك بتوازن القبائل', portraitEmoji: '⚔️', relations: [{ targetId: 'general', type: 'neutral', strength: 40 }] },
+  { id: 'nuclear_scientist', name: 'د. ليلى العلمية', role: 'عالمة نووية', loyalty: 80, skill: 95, status: 'alive', description: 'عبقرية في الفيزياء النووية وحلم البرنامج النووي', portraitEmoji: '🔬', relations: [{ targetId: 'journalist', type: 'neutral', strength: 30 }] },
+  { id: 'journalist', name: 'الصحفي - يوسف الحقيقة', role: 'صحفي شهير', loyalty: 30, skill: 75, status: 'alive', description: 'يكشف الفساد ولا يخشى أحداً', portraitEmoji: '📰', relations: [{ targetId: 'opposition_leader', type: 'ally', strength: 90 }, { targetId: 'tycoon', type: 'rival', strength: 80 }] },
+  { id: 'general', name: 'الجنرال - طارق الحديد', role: 'قائد الجيش', loyalty: 70, skill: 85, status: 'alive', description: 'بطل حرب سابق يحظى بولاء الجنود', portraitEmoji: '🎖️', relations: [{ targetId: 'intelligence_chief', type: 'ally', strength: 80 }, { targetId: 'opposition_leader', type: 'rival', strength: 70 }] },
 ];
 
 const initialStoryChapters: StoryChapter[] = [
   { id: 'ch1', title: 'الفصل الأول: بداية الحكم', description: 'وصلت للسلطة في ظروف غامضة. الجميع يراقبك والتحديات تتراكم. أثبت أنك تستحق هذا المنصب.', unlockCondition: { type: 'turn', value: 0 }, completed: false },
-  { id: 'ch2', title: 'الفصل الثاني: اختبار الولاء', description: 'بعد أشهر من الحكم، تظهر الخيانات. من يقف معك ومن يتآمر عليك؟ عليك أن تكتشف قبل فوات الأوان.', unlockCondition: { type: 'turn', value: 8 }, completed: false },
-  { id: 'ch3', title: 'الفصل الثالث: عاصفة الأزمات', description: 'أزمات متتالية تضرب البلاد. الاقتصاد يترنح والشعب غاضب. هل تستطيع إنقاذ الموقف؟', unlockCondition: { type: 'turn', value: 18 }, completed: false },
-  { id: 'ch4', title: 'الفصل الرابع: صراع القوى', description: 'الفصائل تتصارع والجيش يتحرك. نائب الرئيس يخطط والمعارضة تشتد. من سيسقط أولاً؟', unlockCondition: { type: 'turn', value: 30 }, completed: false },
-  { id: 'ch5', title: 'الفصل الخامس: لحظة الحقيقة', description: 'كل قراراتك السابقة تقودك لهذه اللحظة. هل ستُكتب كبطل أم كطاغية في التاريخ؟', unlockCondition: { type: 'turn', value: 45 }, completed: false },
+  { id: 'ch2', title: 'الفصل الثاني: اختبار الولاء', description: 'بعد أشهر من الحكم، تظهر الخيانات. من يقف معك ومن يتآمر عليك؟', unlockCondition: { type: 'turn', value: 8 }, completed: false },
+  { id: 'ch3', title: 'الفصل الثالث: عاصفة الأزمات', description: 'أزمات متتالية تضرب البلاد. الاقتصاد يترنح والشعب غاضب.', unlockCondition: { type: 'turn', value: 18 }, completed: false },
+  { id: 'ch4', title: 'الفصل الرابع: صراع القوى', description: 'الفصائل تتصارع والجيش يتحرك. نائب الرئيس يخطط والمعارضة تشتد.', unlockCondition: { type: 'turn', value: 30 }, completed: false },
+  { id: 'ch5', title: 'الفصل الخامس: لحظة الحقيقة', description: 'كل قراراتك السابقة تقودك لهذه اللحظة. هل ستُكتب كبطل أم كطاغية؟', unlockCondition: { type: 'turn', value: 45 }, completed: false },
   { id: 'ch6', title: 'الفصل السادس: الحرب الكبرى', description: 'تهديد خارجي يلوح في الأفق. عليك توحيد البلاد أو مواجهة الدمار.', unlockCondition: { type: 'turn', value: 60 }, completed: false },
-  { id: 'ch7', title: 'الفصل السابع: إرث الرئيس', description: 'بعد سنوات من الحكم، ما الإرث الذي ستتركه؟ التاريخ يحكم عليك الآن.', unlockCondition: { type: 'turn', value: 80 }, completed: false },
-  { id: 'ch8', title: 'الفصل الثامن: السلاح النووي', description: 'البرنامج النووي يصل مرحلة حاسمة. العالم يترقب قرارك. هل ستغير موازين القوى؟', unlockCondition: { type: 'turn', value: 100 }, completed: false },
-  { id: 'ch9', title: 'الفصل التاسع: أزمة الخلافة', description: 'صحتك تتدهور والجميع يتسابق على الحكم. من سيخلفك وكيف سينتهي عصرك؟', unlockCondition: { type: 'turn', value: 120 }, completed: false },
-  { id: 'ch10', title: 'الفصل العاشر: العصر الذهبي', description: 'بلادك أصبحت قوة إقليمية. هل ستبني عصراً ذهبياً أم ستسقط من القمة؟', unlockCondition: { type: 'turn', value: 150 }, completed: false },
+  { id: 'ch7', title: 'الفصل السابع: إرث الرئيس', description: 'بعد سنوات من الحكم، ما الإرث الذي ستتركه؟', unlockCondition: { type: 'turn', value: 80 }, completed: false },
+  { id: 'ch8', title: 'الفصل الثامن: السلاح النووي', description: 'البرنامج النووي يصل مرحلة حاسمة. العالم يترقب قرارك.', unlockCondition: { type: 'turn', value: 100 }, completed: false },
+  { id: 'ch9', title: 'الفصل التاسع: أزمة الخلافة', description: 'صحتك تتدهور والجميع يتسابق على الحكم.', unlockCondition: { type: 'turn', value: 120 }, completed: false },
+  { id: 'ch10', title: 'الفصل العاشر: العصر الذهبي', description: 'بلادك أصبحت قوة إقليمية. هل ستبني عصراً ذهبياً؟', unlockCondition: { type: 'turn', value: 150 }, completed: false },
 ];
 
 export const initialGameState: GameState = {
@@ -251,6 +271,8 @@ export const initialGameState: GameState = {
   diplomacy: 45,
   treasury: 80,
   population: 50,
+  food: 60,
+  energy: 55,
   regions: initialRegions,
   advisors: initialAdvisors,
   factions: initialFactions,
