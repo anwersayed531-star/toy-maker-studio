@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Region } from '@/types/game';
-import { MapPin, Users, TrendingUp, Heart, AlertTriangle, Hammer, Coins } from 'lucide-react';
+import { MapPin, Users, TrendingUp, Heart, AlertTriangle, Hammer, Wheat, Zap } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { getRegionName } from '@/i18n/entityTranslations';
 
@@ -40,6 +40,15 @@ const resourceIcons: Record<string, string> = {
   mining: '⛏️',
 };
 
+const buildingIcons: Record<string, string> = {
+  factory: '🏭',
+  hospital: '🏥',
+  military_base: '🏰',
+  university: '🎓',
+  power_plant: '⚡',
+  farm: '🌾',
+};
+
 export const InteractiveMap = ({ regions, selectedRegion, onSelectRegion }: InteractiveMapProps) => {
   const { t, currentLanguage } = useLanguage();
   const selected = regions.find(r => r.id === selectedRegion);
@@ -53,7 +62,6 @@ export const InteractiveMap = ({ regions, selectedRegion, onSelectRegion }: Inte
       
       {/* Map Container */}
       <div className="relative bg-gradient-to-br from-muted/20 to-muted/40 rounded-lg aspect-[4/3] overflow-hidden border border-border/50">
-        {/* Background grid */}
         <div className="absolute inset-0 opacity-5">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -65,7 +73,6 @@ export const InteractiveMap = ({ regions, selectedRegion, onSelectRegion }: Inte
           </svg>
         </div>
 
-        {/* Connection lines between regions */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20" viewBox="0 0 100 100">
           <line x1="48" y1="44" x2="48" y2="19" stroke="currentColor" strokeWidth="0.3" strokeDasharray="2,2" />
           <line x1="48" y1="53" x2="47" y2="80" stroke="currentColor" strokeWidth="0.3" strokeDasharray="2,2" />
@@ -74,7 +81,6 @@ export const InteractiveMap = ({ regions, selectedRegion, onSelectRegion }: Inte
           <line x1="15" y1="65" x2="15" y2="82" stroke="currentColor" strokeWidth="0.3" strokeDasharray="2,2" />
         </svg>
 
-        {/* Regions */}
         {regions.map((region) => {
           const pos = regionPositions[region.id];
           const isSelected = selectedRegion === region.id;
@@ -85,7 +91,7 @@ export const InteractiveMap = ({ regions, selectedRegion, onSelectRegion }: Inte
               onClick={() => onSelectRegion(region.id)}
               className={`absolute rounded-lg bg-gradient-to-br ${getRegionColor(region)} border-2 ${getRegionBorderColor(region)}
                 transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5
-                ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-card z-10 shadow-lg' : 'hover:scale-105 hover:shadow-md'}`}
+                ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-card z-10 shadow-lg shadow-primary/20' : 'hover:scale-105 hover:shadow-md'}`}
               style={{
                 left: `${pos.x}%`,
                 top: `${pos.y}%`,
@@ -103,6 +109,13 @@ export const InteractiveMap = ({ regions, selectedRegion, onSelectRegion }: Inte
                   <span key={r} className="text-[8px] sm:text-[10px]">{resourceIcons[r]}</span>
                 ))}
               </div>
+              {region.buildings.length > 0 && (
+                <div className="flex items-center gap-0.5">
+                  {region.buildings.slice(0, 2).map(b => (
+                    <span key={b.id} className="text-[7px]">{buildingIcons[b.type]}</span>
+                  ))}
+                </div>
+              )}
               {region.unrest > 40 && (
                 <motion.div
                   animate={{ scale: [1, 1.3, 1] }}
@@ -123,59 +136,31 @@ export const InteractiveMap = ({ regions, selectedRegion, onSelectRegion }: Inte
           animate={{ opacity: 1, y: 0 }}
           className="mt-4 p-4 bg-muted/30 rounded-lg border border-border/50 space-y-3"
         >
-          <h4 className="font-bold text-foreground text-lg">{getRegionName(selected.id, currentLanguage)}</h4>
+          <div className="flex items-center justify-between">
+            <h4 className="font-bold text-foreground text-lg">{getRegionName(selected.id, currentLanguage)}</h4>
+            <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+              {selected.population}M {t('population')}
+            </span>
+          </div>
           
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-muted-foreground" />
-              <span className="text-muted-foreground">{t('population')}:</span>
-              <span className="font-medium text-foreground">{selected.population}M</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-emerald-500" />
-              <span className="text-muted-foreground">{t('economy')}:</span>
-              <span className="font-medium text-foreground">{selected.economy}%</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Heart className="w-4 h-4 text-primary" />
-              <span className="text-muted-foreground">{t('loyalty')}:</span>
-              <span className="font-medium text-foreground">{selected.loyalty}%</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-amber-500" />
-              <span className="text-muted-foreground">{t('unrest')}:</span>
-              <span className={`font-medium ${selected.unrest > 50 ? 'text-destructive' : 'text-foreground'}`}>
-                {selected.unrest}%
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Hammer className="w-4 h-4 text-blue-500" />
-              <span className="text-muted-foreground">التنمية:</span>
-              <span className="font-medium text-foreground">{selected.development}%</span>
-            </div>
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <StatRow icon={<TrendingUp className="w-3.5 h-3.5 text-emerald-500" />} label={t('economy')} value={selected.economy} color="bg-emerald-500" />
+            <StatRow icon={<Heart className="w-3.5 h-3.5 text-primary" />} label={t('loyalty')} value={selected.loyalty} color="bg-primary" />
+            <StatRow icon={<Hammer className="w-3.5 h-3.5 text-blue-400" />} label={t('development')} value={selected.development} color="bg-blue-400" />
+            <StatRow icon={<AlertTriangle className="w-3.5 h-3.5 text-amber-500" />} label={t('unrest')} value={selected.unrest} color={selected.unrest > 50 ? 'bg-destructive' : 'bg-amber-500'} danger={selected.unrest > 50} />
+            <StatRow icon={<Wheat className="w-3.5 h-3.5 text-green-400" />} label="🌾" value={selected.food} color="bg-green-400" />
+            <StatRow icon={<Zap className="w-3.5 h-3.5 text-yellow-400" />} label="⚡" value={selected.energy} color="bg-yellow-400" />
           </div>
 
-          {/* Stat Bars */}
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground w-14">اقتصاد</span>
-              <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                <div className="h-full bg-emerald-500 rounded-full transition-all" style={{ width: `${selected.economy}%` }} />
-              </div>
+          {selected.buildings.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {selected.buildings.map(b => (
+                <span key={b.id} className="px-2 py-1 bg-accent/15 text-accent text-xs rounded-full border border-accent/20">
+                  {buildingIcons[b.type]} Lv.{b.level}
+                </span>
+              ))}
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground w-14">ولاء</span>
-              <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${selected.loyalty}%` }} />
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground w-14">اضطراب</span>
-              <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                <div className={`h-full rounded-full transition-all ${selected.unrest > 50 ? 'bg-destructive' : 'bg-amber-500'}`} style={{ width: `${selected.unrest}%` }} />
-              </div>
-            </div>
-          </div>
+          )}
 
           <div className="flex flex-wrap gap-1.5">
             {selected.resources.map(resource => (
@@ -189,3 +174,14 @@ export const InteractiveMap = ({ regions, selectedRegion, onSelectRegion }: Inte
     </div>
   );
 };
+
+const StatRow = ({ icon, label, value, color, danger }: { icon: React.ReactNode; label: string; value: number; color: string; danger?: boolean }) => (
+  <div className="flex items-center gap-1.5">
+    {icon}
+    <span className="text-xs text-muted-foreground w-8 truncate">{label}</span>
+    <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+      <div className={`h-full ${color} rounded-full transition-all`} style={{ width: `${value}%` }} />
+    </div>
+    <span className={`text-[10px] font-bold ${danger ? 'text-destructive' : 'text-foreground'}`}>{value}</span>
+  </div>
+);
